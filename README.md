@@ -58,9 +58,9 @@ CoDone 的产品形态受微信能力边界约束，核心规则详见 [平台�
 
 ## 原型
 
-[打开可点击原型](prototype/index.html)
+[查看原型源码](prototype/index.html)
 
-原型是单文件 HTML，CSS 和 JS 全部内联，不依赖外部图片、字体或 CDN。直接双击 `prototype/index.html` 即可在浏览器打开。
+原型是单文件 HTML，CSS 和 JS 全部内联，不依赖外部图片、字体或 CDN。GitHub 页面不能直接运行 HTML；请下载仓库后双击 `prototype/index.html` 在浏览器打开。
 
 这是早期的双手机概念验证版，包含演示控制面板，主要用于验证邀请、订阅和服务通知链路。最新设计方向是**单手机壳 + iOS 液态玻璃 + 无外置演示控制**，详见 [设计方向](docs/design-direction.md)。
 
