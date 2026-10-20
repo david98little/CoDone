@@ -26,9 +26,9 @@ CoDone 是一款嵌入微信聊天场景的轻量协同待办小程序，让用�
 | 文档版本 | v1.0 |
 | 编写日期 | 2026-10-20 |
 | 产品负责人 | 张鸿韦 |
-| 项目性质 | 私有项目，仅个人使用，非开源 |
+| 项目性质 | 公开可见、非开源；仅作者个人使用 |
 | 当前阶段 | 需求梳理，待原型验证后进入 MVP 开发 |
-| 代码仓库 | [david98little/CoDone](https://github.com/david98little/CoDone)（Private） |
+| 代码仓库 | [david98little/CoDone](https://github.com/david98little/CoDone)（Public） |
 | 关联原型 | [CoDone iOS 液态玻璃原型](../prototype/index.html) |
 
 ## 二、背景与问题
