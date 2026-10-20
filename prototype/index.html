@@ -1,0 +1,1494 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CoDone · 液态玻璃原型</title>
+<style>
+/* ==========================================================================
+   1. 设计 token
+   规范：miniprogram-ui-ux-design v1.0.1
+   画板按 375px 基准，原型中 1px = 2rpx；WXSS 落地时尺寸 ×2 转 rpx
+   ========================================================================== */
+:root{
+  /* 颜色：品牌绿 */
+  --primary:#0B7A4B; --primary-hover:#08663E; --primary-soft:#E8F6EF; --primary-soft-2:#CFEBDD; --primary-contrast:#FFFFFF;
+  --accent:#B45309; --accent-soft:#FEF3C7; --accent-ink:#7C2D12;
+  /* 颜色：中性 */
+  --text-primary:#17211B; --text-secondary:#55605A; --text-muted:#6B756F; --text-inverse:#FFFFFF;
+  --bg-stage:#EDF2EC; --bg-page:#F7F8F4; --bg-card:#FFFFFF; --bg-panel:#FFFFFF; --bg-hover:#EEF1EB; --bg-active:#E8F6EF; --bg-mask:rgba(14,22,17,.48);
+  --border:#DDE3DA; --border-input:#C9D2CB; --border-strong:#A9B5AC;
+  /* 颜色：语义 */
+  --success:#0B7A4B; --success-soft:#E8F6EF; --success-ink:#08663E;
+  --warning:#B45309; --warning-soft:#FEF3C7; --warning-ink:#7C2D12;
+  --danger:#B42318; --danger-soft:#FEF0EE; --danger-ink:#8F1D14; --info:#2563EB;
+  /* 品牌 hero 与 toast */
+  --hero-bg:#0B7A4B; --hero-bg-2:#075C39; --hero-text:#FFFFFF; --hero-muted:#D7F3E4;
+  --hero-line:rgba(255,255,255,.18); --hero-button:rgba(255,255,255,.16); --hero-button-hover:rgba(255,255,255,.24);
+  --ring-track:rgba(255,255,255,.24); --ring-value:#FFFFFF;
+  --toast-bg:#17211B; --toast-text:#FFFFFF;
+  /* 形 */
+  --radius-sm:8px; --radius:12px; --radius-lg:20px; --radius-pill:999px;
+  --shadow-1:0 2px 8px rgba(20,28,23,.06); --shadow-2:0 10px 28px rgba(20,28,23,.10); --shadow-3:0 18px 48px rgba(20,28,23,.16);
+  /* 字体：系统字体，正文 16px = 32rpx */
+  --font-sans:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  --font-mono:ui-monospace,"SF Mono",Consolas,"Cascadia Mono",monospace;
+  --fs-xs:12px; --fs-sm:14px; --fs-base:16px; --fs-md:18px; --fs-lg:20px; --fs-xl:24px; --fs-2xl:28px; --fs-3xl:32px;
+  --lh-tight:1.2; --lh-base:1.6; --lh-table:1.4; --lh-number:1.1;
+  /* 间距：4 / 8 / 12 / 16 / 24 / 32 / 48 = 8 / 16 / 24 / 32 / 48 / 64 / 96rpx */
+  --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:24px; --sp-6:32px; --sp-7:48px;
+  /* 形态：手机壳与触控 */
+  --device-w:390px; --device-h:844px; --device-radius:48px;
+  --device-shell-bg:#E7ECE6; --device-frame:#101614; --device-pad:10px;
+  --statusbar-h:44px; --topbar-h:52px; --tabbar-h:72px; --safe-bottom:24px;
+  --tap-min:44px; --control-h:48px; --row-h:64px;
+  --content-max:1280px;
+  /* 暗黑主题的原始值，避免组件里出现硬编码色值 */
+  --dark-bg-stage:#0D1410; --dark-bg-page:#121A15; --dark-bg-card:#19231C; --dark-bg-hover:#223128; --dark-bg-active:#1D3B2B; --dark-bg-mask:rgba(0,0,0,.62);
+  --dark-text-primary:#F2F5EF; --dark-text-secondary:#C4CEC6; --dark-text-muted:#9AA79E;
+  --dark-border:#2C3B31; --dark-border-input:#3B4E41; --dark-border-strong:#52685A;
+  --dark-primary:#34D399; --dark-primary-hover:#6EE7B7; --dark-primary-soft:#123726; --dark-primary-soft-2:#1B4F36; --dark-primary-contrast:#062016;
+  --dark-hero-bg:#0F5D3A; --dark-hero-bg-2:#0B452C; --dark-hero-muted:#C7EAD6;
+  --dark-success-soft:#123726; --dark-success-ink:#86EFAC; --dark-warning-soft:#3F2A10; --dark-warning-ink:#FCD34D; --dark-danger-soft:#3B1D1A; --dark-danger-ink:#FCA5A5;
+  --dark-toast-bg:#F2F5EF; --dark-toast-text:#121A15;
+}
+:root[data-theme="dark"]{
+  --primary:var(--dark-primary); --primary-hover:var(--dark-primary-hover); --primary-soft:var(--dark-primary-soft); --primary-soft-2:var(--dark-primary-soft-2); --primary-contrast:var(--dark-primary-contrast);
+  --text-primary:var(--dark-text-primary); --text-secondary:var(--dark-text-secondary); --text-muted:var(--dark-text-muted);
+  --bg-stage:var(--dark-bg-stage); --bg-page:var(--dark-bg-page); --bg-card:var(--dark-bg-card); --bg-panel:var(--dark-bg-card); --bg-hover:var(--dark-bg-hover); --bg-active:var(--dark-bg-active); --bg-mask:var(--dark-bg-mask);
+  --border:var(--dark-border); --border-input:var(--dark-border-input); --border-strong:var(--dark-border-strong);
+  --success:var(--dark-primary); --success-soft:var(--dark-success-soft); --success-ink:var(--dark-success-ink); --warning-soft:var(--dark-warning-soft); --warning-ink:var(--dark-warning-ink); --danger-soft:var(--dark-danger-soft); --danger-ink:var(--dark-danger-ink);
+  --hero-bg:var(--dark-hero-bg); --hero-bg-2:var(--dark-hero-bg-2); --hero-muted:var(--dark-hero-muted);
+  --toast-bg:var(--dark-toast-bg); --toast-text:var(--dark-toast-text);
+  --shadow-1:0 2px 8px rgba(0,0,0,.22); --shadow-2:0 10px 28px rgba(0,0,0,.30); --shadow-3:0 18px 48px rgba(0,0,0,.40);
+}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth;color-scheme:light}
+html[data-theme="dark"]{color-scheme:dark}
+body{
+  margin:0;
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  background:
+    radial-gradient(circle at 8% 0%, var(--primary-soft), transparent 34%),
+    radial-gradient(circle at 92% 12%, var(--warning-soft), transparent 28%),
+    var(--bg-stage);
+  color:var(--text-primary);
+  font-family:var(--font-sans);
+  font-size:var(--fs-base);
+  line-height:var(--lh-base);
+}
+button,input{font:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+.num{font-variant-numeric:tabular-nums}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+/* ==========================================================================
+   2. 页面框架
+   ========================================================================== */
+.page{max-width:var(--content-max);margin:0 auto;padding:var(--sp-6) var(--sp-5) var(--sp-7);overflow-x:hidden}
+.masthead{display:flex;align-items:flex-end;justify-content:space-between;gap:var(--sp-5);margin-bottom:var(--sp-5)}
+.brand{display:flex;align-items:center;gap:var(--sp-3);min-width:0}
+.brand>div{min-width:0}
+.brand-mark{
+  width:var(--tap-min);height:var(--tap-min);border-radius:var(--radius-lg);
+  background:var(--primary);color:var(--primary-contrast);
+  display:flex;align-items:center;justify-content:center;font-size:var(--fs-xl);font-weight:600;
+  box-shadow:var(--shadow-2);flex:0 0 auto;
+}
+.brand h1{margin:0;font-size:var(--fs-2xl);line-height:var(--lh-tight);letter-spacing:0}
+.brand p{margin:var(--sp-1) 0 0;color:var(--text-secondary);font-size:var(--fs-sm);max-width:100%;overflow-wrap:anywhere}
+.masthead-tools{display:flex;align-items:center;gap:var(--sp-3);flex-wrap:wrap;justify-content:flex-end}
+.version{
+  display:inline-flex;align-items:center;gap:var(--sp-2);
+  padding:var(--sp-2) var(--sp-3);border:1px solid var(--border);
+  border-radius:var(--radius-pill);background:var(--bg-card);
+  color:var(--text-secondary);font-size:var(--fs-xs);
+}
+.version i{width:var(--sp-2);height:var(--sp-2);border-radius:var(--radius-pill);background:var(--success);display:block}
+.btn{
+  min-height:var(--control-h);padding:0 var(--sp-4);border-radius:var(--radius);
+  border:1px solid transparent;display:inline-flex;align-items:center;justify-content:center;
+  gap:var(--sp-2);font-size:var(--fs-sm);font-weight:500;transition:background .18s ease,border-color .18s ease,transform .18s ease;
+}
+.btn:active{transform:translateY(1px)}
+.btn-primary{background:var(--primary);color:var(--primary-contrast)}
+.btn-primary:hover{background:var(--primary-hover)}
+.btn-ghost{background:var(--bg-card);border-color:var(--border);color:var(--text-primary)}
+.btn-ghost:hover{background:var(--bg-hover)}
+.btn-soft{background:var(--primary-soft);color:var(--primary)}
+.btn-soft:hover{background:var(--primary-soft-2)}
+.btn-danger{background:var(--danger-soft);color:var(--danger-ink)}
+.btn-sm{min-height:var(--tap-min);padding:0 var(--sp-3);font-size:var(--fs-xs)}
+.icon{width:var(--sp-5);height:var(--sp-5);display:inline-block;vertical-align:middle;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:0 0 auto}
+
+.layout{display:flex;align-items:flex-start;justify-content:center;gap:var(--sp-6);flex-wrap:wrap}
+.phones{display:flex;align-items:flex-start;justify-content:center;gap:var(--sp-6);flex-wrap:wrap}
+.phone-col{display:flex;flex-direction:column;gap:var(--sp-3);align-items:center}
+.phone-label{
+  display:inline-flex;align-items:center;gap:var(--sp-2);
+  color:var(--text-secondary);font-size:var(--fs-sm);font-weight:500;
+}
+.phone-label .dot{width:var(--sp-2);height:var(--sp-2);border-radius:var(--radius-pill);background:var(--primary)}
+.phone-label.friend .dot{background:var(--accent)}
+
+/* ==========================================================================
+   3. 手机壳与屏幕
+   ========================================================================== */
+.device{
+  width:var(--device-w);height:var(--device-h);background:var(--device-frame);
+  border-radius:var(--device-radius);padding:var(--device-pad);box-shadow:var(--shadow-3);
+  flex:0 0 auto;
+}
+.screen{
+  position:relative;width:100%;height:100%;background:var(--bg-page);
+  border-radius:calc(var(--device-radius) - 10px);overflow:hidden;
+  display:flex;flex-direction:column;
+}
+.notch{
+  position:absolute;top:8px;left:50%;transform:translateX(-50%);
+  width:112px;height:26px;background:var(--device-frame);
+  border-radius:var(--radius-pill);z-index:40;pointer-events:none;
+}
+.statusbar{
+  height:var(--statusbar-h);flex:0 0 var(--statusbar-h);
+  display:flex;align-items:flex-end;justify-content:space-between;
+  padding:0 var(--sp-5) var(--sp-1);
+  font-size:var(--fs-xs);font-weight:600;color:var(--text-primary);
+}
+.statusbar .signal{font-family:var(--font-mono);font-size:var(--fs-xs);letter-spacing:.04em}
+
+/* 小程序胶囊栏 */
+.miniapp-bar{
+  height:var(--topbar-h);flex:0 0 var(--topbar-h);
+  display:flex;align-items:center;justify-content:space-between;gap:var(--sp-3);
+  padding:0 var(--sp-4);background:var(--bg-card);border-bottom:1px solid var(--border);
+}
+.miniapp-title{display:flex;align-items:center;gap:var(--sp-2);font-size:var(--fs-md);font-weight:600}
+.mini-logo{width:var(--sp-5);height:var(--sp-5);border-radius:var(--radius-sm);background:var(--primary);color:var(--primary-contrast);display:flex;align-items:center;justify-content:center;font-size:var(--fs-xs);font-weight:600}
+.capsule{
+  display:flex;align-items:center;gap:var(--sp-2);
+  min-height:var(--sp-6);padding:0 var(--sp-2);border:1px solid var(--border);
+  border-radius:var(--radius-pill);color:var(--text-secondary);font-size:var(--fs-xs);
+}
+.capsule span{display:flex;align-items:center;justify-content:center;min-width:var(--sp-4);height:var(--sp-4)}
+.icon-btn{
+  width:var(--tap-min);height:var(--tap-min);border:0;background:transparent;
+  border-radius:var(--radius-pill);color:var(--text-secondary);
+  display:flex;align-items:center;justify-content:center;flex:0 0 auto;
+}
+.icon-btn:hover{background:var(--bg-hover);color:var(--text-primary)}
+
+/* ==========================================================================
+   4. 我的视角
+   ========================================================================== */
+.app-body{flex:1;overflow-y:auto;padding:var(--sp-3) var(--sp-4) var(--sp-4);scrollbar-width:none}
+.app-body::-webkit-scrollbar{display:none}
+.app-head{display:flex;align-items:flex-start;justify-content:space-between;gap:var(--sp-4);margin-bottom:var(--sp-4)}
+.eyebrow{margin:0 0 var(--sp-1);color:var(--text-muted);font-size:var(--fs-xs);font-weight:500}
+.app-head h2{margin:0;font-size:var(--fs-2xl);line-height:var(--lh-tight);letter-spacing:0}
+.avatar{
+  width:var(--tap-min);height:var(--tap-min);border-radius:var(--radius-pill);
+  border:0;background:var(--primary-soft);color:var(--primary);
+  display:flex;align-items:center;justify-content:center;font-size:var(--fs-sm);font-weight:600;flex:0 0 auto;
+}
+.avatar-sm{width:var(--sp-6);height:var(--sp-6);font-size:var(--fs-xs)}
+.avatar-friend{background:var(--warning-soft);color:var(--warning-ink)}
+
+.notice-chip{
+  width:100%;display:flex;align-items:center;gap:var(--sp-3);
+  padding:var(--sp-3);margin-bottom:var(--sp-3);
+  border:1px solid var(--primary-soft-2);border-radius:var(--radius-lg);
+  background:var(--primary-soft);color:var(--primary);
+  text-align:left;font-size:var(--fs-sm);
+}
+.notice-chip:hover{background:var(--primary-soft-2)}
+.notice-chip .notice-copy{flex:1;min-width:0}
+.notice-chip b{display:block;color:var(--text-primary);font-size:var(--fs-sm)}
+.notice-chip small{display:block;color:var(--text-secondary);font-size:var(--fs-xs);margin-top:var(--sp-1)}
+
+.hero-card{
+  position:relative;overflow:hidden;margin-bottom:var(--sp-4);
+  padding:var(--sp-4);border-radius:var(--radius-lg);
+  background:linear-gradient(140deg,var(--hero-bg),var(--hero-bg-2));
+  color:var(--hero-text);box-shadow:var(--shadow-2);
+}
+.hero-card::after{
+  content:"";position:absolute;width:180px;height:180px;right:-70px;top:-90px;
+  border:1px solid var(--hero-line);border-radius:var(--radius-pill);pointer-events:none;
+}
+.hero-top{display:flex;align-items:flex-start;justify-content:space-between;gap:var(--sp-4);position:relative;z-index:1}
+.hero-copy{min-width:0}
+.hero-kicker{margin:0 0 var(--sp-2);color:var(--hero-muted);font-size:var(--fs-xs);font-weight:500}
+.hero-copy h3{margin:0;font-size:var(--fs-2xl);line-height:var(--lh-tight);letter-spacing:-.02em}
+.hero-sub{margin:var(--sp-2) 0 0;color:var(--hero-muted);font-size:var(--fs-sm)}
+.progress-ring{position:relative;width:68px;height:68px;flex:0 0 auto}
+.progress-ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.ring-track{fill:none;stroke:var(--ring-track);stroke-width:6}
+.ring-value{fill:none;stroke:var(--ring-value);stroke-width:6;stroke-linecap:round;stroke-dasharray:119.38;stroke-dashoffset:89.54;transition:stroke-dashoffset .3s ease}
+.progress-ring>span{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:var(--fs-sm);font-weight:600;font-variant-numeric:tabular-nums}
+.hero-foot{display:flex;align-items:center;gap:var(--sp-3);margin-top:var(--sp-4);position:relative;z-index:1}
+.avatar-row{display:flex;align-items:center}
+.avatar-row .avatar{border:2px solid var(--hero-bg);margin-left:calc(var(--sp-1) * -1)}
+.avatar-row .avatar:first-child{margin-left:0}
+.hero-card .avatar{background:var(--hero-text);color:var(--hero-bg)}
+.hero-card .avatar-friend{background:var(--accent-soft);color:var(--accent-ink)}
+.hero-muted{color:var(--hero-muted);font-size:var(--fs-xs);flex:1}
+.hero-share{
+  min-height:var(--tap-min);padding:0 var(--sp-4);border:1px solid var(--hero-line);
+  border-radius:var(--radius-pill);background:var(--hero-button);color:var(--hero-text);
+  font-size:var(--fs-xs);font-weight:500;white-space:nowrap;
+}
+.hero-share:hover{background:var(--hero-button-hover)}
+
+.segmented{
+  display:flex;gap:var(--sp-1);padding:var(--sp-1);
+  background:var(--bg-hover);border-radius:var(--radius-pill);margin-bottom:var(--sp-3);
+}
+.seg-btn{
+  flex:1;min-height:var(--tap-min);border:0;border-radius:var(--radius-pill);
+  background:transparent;color:var(--text-secondary);font-size:var(--fs-sm);font-weight:500;
+  transition:background .18s ease,color .18s ease,box-shadow .18s ease;
+}
+.seg-btn:hover{color:var(--text-primary)}
+.seg-btn.active{background:var(--bg-card);color:var(--primary);box-shadow:var(--shadow-1);font-weight:600}
+.section-head{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-3);margin:0 0 var(--sp-2)}
+.section-title{display:flex;align-items:baseline;gap:var(--sp-2);min-width:0}
+.section-head h3{margin:0;font-size:var(--fs-md);font-weight:600}
+.section-meta{color:var(--text-muted);font-size:var(--fs-xs)}
+.add-btn{
+  min-height:var(--tap-min);padding:0 var(--sp-3);border:0;border-radius:var(--radius-pill);
+  background:var(--primary-soft);color:var(--primary);display:inline-flex;align-items:center;gap:var(--sp-1);
+  font-size:var(--fs-xs);font-weight:600;
+}
+.add-btn:hover{background:var(--primary-soft-2)}
+.add-btn .icon{width:var(--sp-4);height:var(--sp-4)}
+
+.task-list{display:flex;flex-direction:column;gap:var(--sp-2)}
+.task{
+  display:flex;align-items:center;gap:var(--sp-3);
+  min-height:var(--row-h);padding:var(--sp-3) var(--sp-4);
+  border:1px solid var(--border);border-radius:var(--radius);
+  background:var(--bg-card);box-shadow:var(--shadow-1);
+  transition:border-color .18s ease,background .18s ease,transform .18s ease;
+}
+.task:hover{border-color:var(--primary-soft-2);transform:translateY(-1px)}
+.task[data-owner="friend"]{border-left:3px solid var(--accent)}
+.task.done{background:var(--bg-hover)}
+.task.done .task-title{text-decoration:line-through;color:var(--text-muted)}
+.task-open{
+  flex:1;min-width:0;min-height:var(--tap-min);display:flex;align-items:center;gap:var(--sp-3);
+  border:0;background:transparent;padding:0;text-align:left;color:inherit;
+}
+.task-open:hover .task-title{color:var(--primary)}
+.check{
+  width:var(--tap-min);height:var(--tap-min);border:0;border-radius:var(--radius-pill);
+  background:transparent;display:flex;align-items:center;justify-content:center;
+  flex:0 0 auto;margin:-10px 0 -10px -10px;color:transparent;padding:0;/* spec-ok: 44px touch target aligns a 26px visual dot */
+}
+.check-dot{
+  width:26px;height:26px;border:2px solid var(--border-strong);border-radius:var(--radius-pill);
+  background:var(--bg-card);display:flex;align-items:center;justify-content:center;
+  transition:background .15s ease,border-color .15s ease;
+}
+.check:hover .check-dot{border-color:var(--primary)}
+.task.done .check-dot{background:var(--primary);border-color:var(--primary);color:var(--primary-contrast)}
+.task-main{flex:1;min-width:0;display:flex;flex-direction:column;gap:var(--sp-1)}
+.task-title{display:block;font-size:var(--fs-base);font-weight:500;line-height:var(--lh-table);color:var(--text-primary)}
+.task-meta{display:flex;align-items:center;gap:var(--sp-2);flex-wrap:wrap;margin-top:0;color:var(--text-muted);font-size:var(--fs-xs)}
+.task-meta .who{display:inline-flex;align-items:center;gap:var(--sp-1)}
+.task-meta .who .avatar-sm{width:var(--sp-5);height:var(--sp-5)}
+.pill{display:inline-flex;align-items:center;gap:var(--sp-1);min-height:24px;padding:0 var(--sp-2);border-radius:var(--radius-pill);font-size:var(--fs-xs);white-space:nowrap}
+.pill-warning{background:var(--warning-soft);color:var(--warning-ink)}
+.pill-success{background:var(--success-soft);color:var(--success-ink)}
+.pill-primary{background:var(--primary-soft);color:var(--primary)}
+.pill-muted{background:var(--bg-hover);color:var(--text-muted)}
+.task-side{display:flex;flex-direction:column;align-items:flex-end;gap:var(--sp-2);flex:0 0 auto}
+.task-time{font-size:var(--fs-xs);color:var(--text-muted);font-family:var(--font-mono);font-variant-numeric:tabular-nums}
+
+.empty,.error-box{
+  min-height:240px;border:1px dashed var(--border);border-radius:var(--radius-lg);
+  background:var(--bg-card);display:flex;align-items:center;justify-content:center;text-align:center;padding:var(--sp-5);
+}
+.empty .ph,.error-box .ph{
+  width:64px;height:64px;border-radius:var(--radius-pill);
+  background:var(--bg-hover);display:flex;align-items:center;justify-content:center;margin:0 auto var(--sp-3);color:var(--text-muted);
+}
+.empty .t,.error-box .t{color:var(--text-secondary);font-size:var(--fs-sm);font-weight:500}
+.empty .d,.error-box .d{color:var(--text-muted);font-size:var(--fs-xs);margin:var(--sp-1) 0 var(--sp-3);max-width:260px}
+.skeleton{display:flex;flex-direction:column;gap:var(--sp-2)}
+.skeleton-row{
+  display:flex;align-items:center;gap:var(--sp-3);padding:var(--sp-3);
+  border:1px solid var(--border);border-radius:var(--radius-lg);background:var(--bg-card);
+}
+.skeleton-row i{display:block;height:var(--sp-3);border-radius:var(--radius-pill);background:var(--bg-hover)}
+.skeleton-row i:first-child{width:var(--sp-6);height:var(--sp-6);flex:0 0 auto}
+.skeleton-row .lines{flex:1;display:flex;flex-direction:column;gap:var(--sp-2)}
+.skeleton-row .lines i:last-child{width:60%}
+.skeleton-label{color:var(--text-muted);font-size:var(--fs-xs);text-align:center;padding:var(--sp-2) 0}
+
+.tabbar{
+  height:var(--tabbar-h);flex:0 0 var(--tabbar-h);
+  display:flex;
+  background:var(--bg-card);border-top:1px solid var(--border);
+  padding-bottom:var(--safe-bottom);
+}
+.tab{
+  flex:1;min-height:var(--tap-min);
+  border:0;background:transparent;color:var(--text-muted);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--sp-1);
+  font-size:var(--fs-xs);padding:0;
+}
+.tab .icon{width:var(--sp-5);height:var(--sp-5)}
+.tab.active{color:var(--primary);font-weight:500}
+.tab:hover{background:var(--bg-hover)}
+
+/* ==========================================================================
+   5. 好友视角：微信聊天
+   ========================================================================== */
+.chat-topbar{
+  height:var(--topbar-h);flex:0 0 var(--topbar-h);
+  display:flex;align-items:center;gap:var(--sp-2);
+  padding:0 var(--sp-2);background:var(--bg-card);border-bottom:1px solid var(--border);
+}
+.chat-title{flex:1;min-width:0;text-align:center}
+.chat-title h2{margin:0;font-size:var(--fs-md);font-weight:600;line-height:var(--lh-tight)}
+.chat-title p{margin:0;color:var(--text-muted);font-size:var(--fs-xs)}
+.chat-body{flex:1;overflow-y:auto;padding:var(--sp-4) var(--sp-3) var(--sp-4);background:var(--bg-page);scrollbar-width:none}
+.chat-body::-webkit-scrollbar{display:none}
+.chat-date{text-align:center;color:var(--text-muted);font-size:var(--fs-xs);margin:var(--sp-2) 0 var(--sp-4)}
+.bubble{
+  max-width:82%;padding:var(--sp-3) var(--sp-4);margin-bottom:var(--sp-3);
+  border-radius:var(--radius-lg);font-size:var(--fs-sm);line-height:var(--lh-base);
+  background:var(--bg-card);border:1px solid var(--border);box-shadow:var(--shadow-1);
+}
+.bubble.incoming{color:var(--text-primary)}
+.bubble.outgoing{
+  margin-left:auto;background:var(--primary);border-color:var(--primary);
+  color:var(--primary-contrast);box-shadow:none;
+}
+.chat-card{
+  width:86%;margin:var(--sp-2) 0 var(--sp-4);
+  border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;
+  background:var(--bg-card);box-shadow:var(--shadow-2);
+  animation:riseIn .28s ease both;
+}
+.chat-card-sender{
+  display:flex;align-items:center;gap:var(--sp-2);
+  margin:var(--sp-2) 0 var(--sp-1);color:var(--text-muted);font-size:var(--fs-xs);
+}
+.chat-card-sender .avatar-sm{width:var(--sp-6);height:var(--sp-6)}
+.chat-card-head{display:flex;align-items:center;gap:var(--sp-2);padding:var(--sp-3) var(--sp-3) 0;color:var(--text-secondary);font-size:var(--fs-xs)}
+.chat-card-head .mini-logo{width:var(--sp-5);height:var(--sp-5)}
+.chat-card-body{padding:var(--sp-3)}
+.chat-card-body h3{margin:0;font-size:var(--fs-md);font-weight:600;line-height:var(--lh-tight)}
+.chat-card-body p{margin:var(--sp-1) 0 0;color:var(--text-muted);font-size:var(--fs-xs)}
+.chat-card-progress{display:flex;align-items:center;gap:var(--sp-2);margin:var(--sp-3) 0}
+.chat-card-progress .track{flex:1;height:var(--sp-2);border-radius:var(--radius-pill);background:var(--bg-hover);overflow:hidden}
+.chat-card-progress .track i{display:block;height:100%;background:var(--primary);border-radius:inherit;transition:width .3s ease}
+.chat-card-progress .count{font-size:var(--fs-xs);color:var(--text-muted);font-family:var(--font-mono)}
+.chat-card-foot{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-3);padding:var(--sp-3);border-top:1px solid var(--border);background:var(--bg-page)}
+.chat-card-foot .who{display:flex;align-items:center;gap:var(--sp-2);color:var(--text-muted);font-size:var(--fs-xs)}
+.chat-card-foot .btn{min-height:var(--tap-min);padding:0 var(--sp-4);font-size:var(--fs-sm)}
+.chat-tag{display:inline-flex;align-items:center;gap:var(--sp-1);padding:var(--sp-1) var(--sp-2);border-radius:var(--radius-pill);background:var(--primary-soft);color:var(--primary);font-size:var(--fs-xs)}
+.chat-reminder{
+  width:88%;margin:0 0 var(--sp-4);padding:var(--sp-3);
+  border:1px solid var(--warning-soft);border-left:3px solid var(--warning);
+  border-radius:var(--radius-lg);background:var(--warning-soft);
+  animation:riseIn .28s ease both;
+}
+.chat-reminder .line{display:flex;align-items:flex-start;gap:var(--sp-2);color:var(--warning-ink);font-size:var(--fs-sm)}
+.chat-reminder b{font-weight:600}
+.chat-reminder .link{
+  border:0;background:transparent;color:var(--warning-ink);font-size:var(--fs-xs);font-weight:600;
+  min-height:var(--tap-min);display:inline-flex;align-items:center;padding:0;text-decoration:underline;
+}
+.chat-system{
+  text-align:center;color:var(--text-muted);font-size:var(--fs-xs);
+  margin:var(--sp-2) 0 var(--sp-4);padding:0 var(--sp-4);
+}
+.chat-composer{
+  flex:0 0 auto;display:flex;align-items:center;gap:var(--sp-2);
+  padding:var(--sp-3) var(--sp-3) calc(var(--safe-bottom) + var(--sp-3));
+  background:var(--bg-card);border-top:1px solid var(--border);
+}
+.composer-input{
+  flex:1;min-height:var(--control-h);display:flex;align-items:center;
+  padding:0 var(--sp-4);border-radius:var(--radius);background:var(--bg-page);
+  color:var(--text-muted);font-size:var(--fs-sm);
+}
+.composer-send{width:var(--tap-min);height:var(--tap-min);border:0;border-radius:var(--radius-pill);background:var(--primary-soft);color:var(--primary);display:flex;align-items:center;justify-content:center}
+
+.notification-banner{
+  position:absolute;left:var(--sp-3);right:var(--sp-3);
+  top:calc(var(--statusbar-h) + var(--topbar-h) + var(--sp-2));
+  z-index:15;display:flex;align-items:flex-start;gap:var(--sp-3);
+  padding:var(--sp-3);border:1px solid var(--primary-soft-2);border-radius:var(--radius-lg);
+  background:var(--bg-card);box-shadow:var(--shadow-3);
+  animation:dropIn .3s ease both;
+}
+.notification-banner .notice-icon{
+  width:var(--sp-6);height:var(--sp-6);border-radius:var(--radius);background:var(--primary-soft);
+  color:var(--primary);display:flex;align-items:center;justify-content:center;flex:0 0 auto;
+}
+.notification-banner .copy{flex:1;min-width:0}
+.notification-banner b{display:block;font-size:var(--fs-sm)}
+.notification-banner span{display:block;color:var(--text-secondary);font-size:var(--fs-xs);margin-top:var(--sp-1)}
+.notification-banner .close{
+  border:0;background:transparent;color:var(--text-muted);padding:0;
+  width:var(--tap-min);height:var(--tap-min);display:flex;align-items:center;justify-content:center;
+  flex:0 0 auto;border-radius:var(--radius-pill);
+}
+.notification-banner .close:hover{background:var(--bg-hover);color:var(--text-primary)}
+
+/* ==========================================================================
+   6. 任务详情与弹层
+   ========================================================================== */
+.phone-overlay{
+  position:absolute;top:var(--statusbar-h);left:0;right:0;bottom:0;z-index:30;background:var(--bg-page);
+  display:flex;flex-direction:column;animation:slideIn .24s ease both;
+}
+.detail-topbar{
+  height:var(--topbar-h);flex:0 0 var(--topbar-h);
+  display:flex;align-items:center;gap:var(--sp-2);
+  padding:0 var(--sp-2);background:var(--bg-card);border-bottom:1px solid var(--border);
+}
+.detail-topbar h2{flex:1;margin:0;text-align:center;font-size:var(--fs-md);font-weight:600}
+.detail-body{flex:1;overflow-y:auto;padding:var(--sp-4) var(--sp-4) var(--sp-5);scrollbar-width:none}
+.detail-body::-webkit-scrollbar{display:none}
+.detail-status{display:flex;align-items:center;gap:var(--sp-2);margin-bottom:var(--sp-3)}
+.detail-title{margin:0 0 var(--sp-4);font-size:var(--fs-2xl);line-height:var(--lh-tight);letter-spacing:0}
+.detail-card{
+  background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);
+  padding:var(--sp-4);margin-bottom:var(--sp-3);box-shadow:var(--shadow-1);
+}
+.detail-row{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-4);min-height:var(--row-h);border-bottom:1px solid var(--border)}
+.detail-row:last-child{border-bottom:0}
+.detail-row .k{color:var(--text-secondary);font-size:var(--fs-sm)}
+.detail-row .v{display:flex;align-items:center;gap:var(--sp-2);font-size:var(--fs-sm);text-align:right}
+.detail-row .v .avatar-sm{width:var(--sp-6);height:var(--sp-6)}
+.note-text{margin:0;color:var(--text-secondary);font-size:var(--fs-sm);line-height:var(--lh-base)}
+.timeline{display:flex;flex-direction:column;gap:var(--sp-3)}
+.timeline-item{display:flex;gap:var(--sp-3);font-size:var(--fs-xs);color:var(--text-secondary)}
+.timeline-item i{width:var(--sp-2);height:var(--sp-2);border-radius:var(--radius-pill);background:var(--primary);margin-top:var(--sp-2);flex:0 0 auto}
+.timeline-item time{display:block;color:var(--text-muted);font-size:var(--fs-xs);margin-top:var(--sp-1)}
+.detail-bottom{
+  flex:0 0 auto;display:flex;gap:var(--sp-2);
+  padding:var(--sp-3) var(--sp-4) calc(var(--safe-bottom) + var(--sp-3));
+  background:var(--bg-card);border-top:1px solid var(--border);
+}
+.detail-bottom .btn{flex:1;min-height:var(--tap-min)}
+.subscribe-state{
+  display:flex;align-items:center;gap:var(--sp-2);
+  margin-top:var(--sp-3);padding:var(--sp-3);border-radius:var(--radius);
+  background:var(--primary-soft);color:var(--primary);font-size:var(--fs-xs);
+}
+.subscribe-state.warn{background:var(--warning-soft);color:var(--warning-ink)}
+
+.sheet-mask{
+  position:absolute;inset:0;z-index:50;background:var(--bg-mask);
+  display:flex;align-items:flex-end;animation:fadeIn .2s ease both;
+}
+.sheet{
+  width:100%;background:var(--bg-card);border-radius:var(--radius-lg) var(--radius-lg) 0 0;
+  padding:var(--sp-3) var(--sp-4) calc(var(--safe-bottom) + var(--sp-4));
+  box-shadow:var(--shadow-3);animation:sheetUp .28s ease both;
+}
+.sheet-handle{width:var(--sp-7);height:var(--sp-1);border-radius:var(--radius-pill);background:var(--border);margin:0 auto var(--sp-4)}
+.sheet h2{margin:0;text-align:center;font-size:var(--fs-lg);font-weight:600}
+.sheet .sub{margin:var(--sp-2) 0 var(--sp-4);text-align:center;color:var(--text-muted);font-size:var(--fs-xs)}
+.share-option{
+  width:100%;display:flex;align-items:center;gap:var(--sp-3);
+  padding:var(--sp-3);border:0;border-bottom:1px solid var(--border);background:transparent;text-align:left;
+}
+.share-option:last-of-type{border-bottom:0}
+.share-option:hover{background:var(--bg-hover)}
+.share-option .avatar{width:var(--sp-6);height:var(--sp-6);font-size:var(--fs-xs)}
+.share-option .copy{flex:1;min-width:0}
+.share-option b{display:block;font-size:var(--fs-sm);font-weight:500}
+.share-option span{display:block;color:var(--text-muted);font-size:var(--fs-xs);margin-top:var(--sp-1)}
+.sheet-actions{display:flex;gap:var(--sp-2);margin-top:var(--sp-4)}
+.sheet-actions .btn{flex:1;min-height:var(--tap-min)}
+.subscribe-request{display:flex;align-items:flex-start;gap:var(--sp-3);padding:var(--sp-4) 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);margin:var(--sp-3) 0}
+.subscribe-request .mini-logo{width:var(--sp-6);height:var(--sp-6);border-radius:var(--radius)}
+.subscribe-request h3{margin:0;font-size:var(--fs-sm);font-weight:600}
+.subscribe-request p{margin:var(--sp-1) 0 0;color:var(--text-secondary);font-size:var(--fs-xs);line-height:var(--lh-base)}
+.checkline{display:flex;align-items:center;gap:var(--sp-2);min-height:var(--tap-min);color:var(--text-secondary);font-size:var(--fs-xs);line-height:var(--lh-base);margin:var(--sp-3) 0}
+.checkline input{width:var(--sp-4);height:var(--sp-4);margin:var(--sp-1) 0 0;accent-color:var(--primary)}
+.toast{
+  position:absolute;left:50%;bottom:calc(var(--safe-bottom) + var(--tabbar-h) + var(--sp-4));
+  transform:translateX(-50%) translateY(var(--sp-2));z-index:70;
+  max-width:calc(100% - var(--sp-7));padding:var(--sp-3) var(--sp-4);
+  border-radius:var(--radius);background:var(--toast-bg);color:var(--toast-text);
+  font-size:var(--fs-xs);line-height:var(--lh-base);box-shadow:var(--shadow-3);
+  opacity:0;pointer-events:none;transition:opacity .18s ease,transform .18s ease;
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ==========================================================================
+   7. 演示控制面板
+   ========================================================================== */
+.demo-panel{
+  width:300px;background:var(--bg-card);border:1px solid var(--border);
+  border-radius:var(--radius-lg);padding:var(--sp-5);box-shadow:var(--shadow-2);
+  position:sticky;top:var(--sp-5);flex:0 0 auto;
+}
+.demo-panel h2{margin:0;font-size:var(--fs-lg);line-height:var(--lh-tight)}
+.demo-panel .lead{margin:var(--sp-2) 0 var(--sp-4);color:var(--text-secondary);font-size:var(--fs-xs);line-height:var(--lh-base)}
+.steps{display:flex;flex-direction:column;border-top:1px solid var(--border)}
+.step{display:flex;gap:var(--sp-3);padding:var(--sp-3) 0;border-bottom:1px solid var(--border)}
+.step-num{
+  width:var(--sp-6);height:var(--sp-6);border-radius:var(--radius-pill);
+  background:var(--bg-hover);color:var(--text-muted);display:flex;align-items:center;justify-content:center;
+  font-size:var(--fs-xs);font-weight:600;flex:0 0 auto;
+}
+.step.done .step-num{background:var(--success-soft);color:var(--success-ink)}
+.step.active .step-num{background:var(--primary);color:var(--primary-contrast)}
+.step-copy{min-width:0}
+.step-copy b{display:block;font-size:var(--fs-sm);font-weight:500}
+.step-copy span{display:block;color:var(--text-muted);font-size:var(--fs-xs);line-height:var(--lh-base);margin-top:var(--sp-1)}
+.status-list{display:flex;flex-direction:column;gap:var(--sp-2);margin:var(--sp-4) 0}
+.status-row{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-2);font-size:var(--fs-xs)}
+.status-row .k{color:var(--text-secondary)}
+.status-row .v{font-weight:500}
+.status-row .v.ok{color:var(--success-ink)}
+.status-row .v.warn{color:var(--warning-ink)}
+.status-row .v.muted{color:var(--text-muted)}
+.demo-actions{display:flex;flex-direction:column;gap:var(--sp-2)}
+.demo-actions .btn{width:100%}
+.state-switch{display:flex;flex-wrap:wrap;gap:var(--sp-1);margin:var(--sp-3) 0}
+.state-btn{
+  flex:1 1 0;
+  min-height:var(--tap-min);border:1px solid var(--border);border-radius:var(--radius-sm);
+  background:var(--bg-card);color:var(--text-secondary);font-size:var(--fs-xs);padding:0;
+}
+.state-btn:hover{background:var(--bg-hover)}
+.state-btn.active{background:var(--primary-soft);border-color:var(--primary-soft-2);color:var(--primary);font-weight:500}
+.rule-note{
+  margin-top:var(--sp-4);padding:var(--sp-3);border-radius:var(--radius);
+  background:var(--warning-soft);color:var(--warning-ink);font-size:var(--fs-xs);line-height:var(--lh-base);
+}
+.rule-note b{display:block;margin-bottom:var(--sp-1)}
+.assumption{margin-top:var(--sp-4);padding-top:var(--sp-4);border-top:1px solid var(--border)}
+.assumption h3{margin:0 0 var(--sp-2);font-size:var(--fs-sm);font-weight:600}
+.assumption ul{margin:0;padding-left:var(--sp-4);color:var(--text-secondary);font-size:var(--fs-xs);line-height:var(--lh-base)}
+.assumption li{margin-bottom:var(--sp-2)}
+
+/* ==========================================================================
+   8. 动效
+   ========================================================================== */
+@keyframes riseIn{from{opacity:0;transform:translateY(var(--sp-2))}to{opacity:1;transform:translateY(0)}}
+@keyframes dropIn{from{opacity:0;transform:translateY(calc(var(--sp-2) * -1))}to{opacity:1;transform:translateY(0)}}
+@keyframes slideIn{from{opacity:0;transform:translateX(var(--sp-4))}to{opacity:1;transform:translateX(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes sheetUp{from{transform:translateY(var(--sp-7))}to{transform:translateY(0)}}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
+  html{scroll-behavior:auto}
+}
+
+/* ==========================================================================
+   9. 响应式
+   ========================================================================== */
+@media (max-width:1180px){
+  .demo-panel{width:100%;max-width:760px;position:static;order:3}
+  .layout{flex-direction:column;align-items:center}
+}
+@media (max-width:900px){
+  .page{padding:var(--sp-5) var(--sp-4) var(--sp-6)}
+  .masthead{align-items:flex-start;flex-direction:column}
+  .masthead-tools{justify-content:flex-start}
+  .phones{gap:var(--sp-5)}
+}
+@media (max-width:860px){
+  .phone-col{display:none}
+  .phone-col.is-visible{display:flex}
+  .mobile-switch{display:flex}
+}
+@media (min-width:861px){
+  .mobile-switch{display:none}
+}
+.mobile-switch{gap:var(--sp-2);margin-bottom:var(--sp-3);justify-content:center}
+.mobile-switch .btn{min-height:var(--tap-min);flex:0 0 auto}
+.mobile-switch .btn.active{background:var(--primary);color:var(--primary-contrast);border-color:var(--primary)}
+@media (max-width:480px){
+  .device{width:calc(100vw - var(--sp-6));height:calc(100vh - var(--sp-7));min-height:620px;max-height:844px;border-radius:var(--sp-6)}
+  .screen{border-radius:calc(var(--sp-6) - 10px)}
+  .brand h1{font-size:var(--fs-xl)}
+  .demo-panel{padding:var(--sp-4)}
+}
+</style>
+</head>
+<body>
+<svg class="sr-only" aria-hidden="true" focusable="false">
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M10 21h4"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+  <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol>
+  <symbol id="i-back" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></symbol>
+  <symbol id="i-more" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></symbol>
+  <symbol id="i-list" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13"/><path d="M3 6h.01M3 12h.01M3 18h.01"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></symbol>
+  <symbol id="i-send" viewBox="0 0 24 24"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></symbol>
+  <symbol id="i-share" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 10.5 6.8-4M8.6 13.5l6.8 4"/></symbol>
+  <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 11h18"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><path d="M10.3 3.7 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.7a2 2 0 0 0-3.4 0Z"/><path d="M12 9v4M12 17h.01"/></symbol>
+  <symbol id="i-check-circle" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m8 12 2.5 2.5L16 9"/></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 15.2A8.5 8.5 0 0 1 8.8 4 8.5 8.5 0 1 0 20 15.2Z"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
+</svg>
+
+<div class="page">
+  <header class="masthead">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true">C</div>
+      <div>
+        <h1>CoDone</h1>
+        <p>把一件待办放进聊天里，让好友能看见、能接手、能收到提醒。</p>
+      </div>
+    </div>
+    <div class="masthead-tools">
+      <span class="version"><i></i>可点击原型 · v2</span>
+      <button class="btn btn-ghost btn-sm" id="theme-toggle" type="button" aria-pressed="false">
+        <svg class="icon" id="theme-icon" aria-hidden="true"><use href="#i-moon"></use></svg>
+        <span id="theme-label">深色</span>
+      </button>
+      <button class="btn btn-ghost btn-sm" id="reset-demo" type="button">
+        <svg class="icon" aria-hidden="true"><use href="#i-back"></use></svg>
+        重置演示
+      </button>
+    </div>
+  </header>
+
+  <div class="mobile-switch" role="group" aria-label="切换手机视角">
+    <button class="btn btn-ghost btn-sm active" id="view-me" type="button">我的视角</button>
+    <button class="btn btn-ghost btn-sm" id="view-friend" type="button">好友视角</button>
+  </div>
+
+  <div class="layout">
+    <div class="phones">
+      <!-- 我的视角 -->
+      <section class="phone-col is-visible" id="col-me">
+        <div class="phone-label"><span class="dot"></span>我 · 张鸿韦</div>
+        <div class="device">
+          <div class="screen">
+            <div class="notch"></div>
+            <div class="statusbar"><span>9:41</span><span class="signal">5G ▮▮▮</span></div>
+            <div class="miniapp-bar">
+              <div class="miniapp-title"><span class="mini-logo">C</span>今天</div>
+              <div class="capsule" aria-label="小程序菜单"><span>•••</span><span>○</span></div>
+            </div>
+
+            <div class="app-body">
+              <div class="app-head">
+                <div>
+                  <p class="eyebrow">10月20日 · 周二</p>
+                  <h2>今天要做什么？</h2>
+                </div>
+                <button class="avatar" type="button" aria-label="我的资料">张</button>
+              </div>
+
+              <button class="notice-chip" id="me-notice" type="button" hidden>
+                <span class="notice-icon" aria-hidden="true"><svg class="icon"><use href="#i-bell"></use></svg></span>
+                <span class="notice-copy">
+                  <b>服务通知已送达好友</b>
+                  <small>林晓已订阅，到期提醒已进入服务通知</small>
+                </span>
+                <svg class="icon" aria-hidden="true"><use href="#i-chevron"></use></svg>
+              </button>
+
+              <section class="hero-card" aria-labelledby="list-title">
+                <div class="hero-top">
+                  <div class="hero-copy">
+                    <p class="hero-kicker">共享清单 · 2 人协作</p>
+                    <h3 id="list-title">周末露营准备</h3>
+                    <p class="hero-sub"><span id="hero-count">4 项待办</span> · 今天</p>
+                  </div>
+                  <div class="progress-ring" aria-label="清单完成进度">
+                    <svg viewBox="0 0 48 48" aria-hidden="true">
+                      <circle class="ring-track" cx="24" cy="24" r="19"></circle>
+                      <circle class="ring-value" id="ring-value" cx="24" cy="24" r="19"></circle>
+                    </svg>
+                    <span id="ring-label">1/4</span>
+                  </div>
+                </div>
+                <div class="hero-foot">
+                  <div class="avatar-row" aria-label="参与人">
+                    <span class="avatar avatar-sm">张</span>
+                    <span class="avatar avatar-sm avatar-friend">林</span>
+                  </div>
+                  <span class="hero-muted" id="hero-left">还差 3 项</span>
+                  <button class="hero-share" id="share-btn" type="button">邀请好友</button>
+                </div>
+              </section>
+
+              <div class="segmented" role="group" aria-label="筛选任务">
+                <button class="seg-btn active" data-filter="today" type="button" aria-pressed="true">今天</button>
+                <button class="seg-btn" data-filter="all" type="button" aria-pressed="false">全部</button>
+                <button class="seg-btn" data-filter="done" type="button" aria-pressed="false">已完成</button>
+              </div>
+
+              <div class="section-head">
+                <div class="section-title">
+                  <h3>任务</h3>
+                  <span class="section-meta" id="task-summary">3 项待办</span>
+                </div>
+                <button class="add-btn" id="new-task" type="button">
+                  <svg class="icon" aria-hidden="true"><use href="#i-plus"></use></svg>
+                  新建
+                </button>
+              </div>
+
+              <div class="task-list" id="task-list">
+                <div class="task done" data-task="camp" data-owner="me">
+                  <button class="check" type="button" aria-label="标记订营地为未完成">
+                    <span class="check-dot"><svg class="icon" aria-hidden="true"><use href="#i-check"></use></svg></span>
+                  </button>
+                  <button class="task-open" type="button" aria-label="打开订营地详情">
+                    <span class="task-main">
+                      <span class="task-title">订营地</span>
+                      <span class="task-meta">
+                        <span class="who"><span class="avatar avatar-sm">张</span>我</span>
+                        <span class="pill pill-success">已完成</span>
+                      </span>
+                    </span>
+                    <span class="task-side"><span class="task-time">09:20</span></span>
+                  </button>
+                </div>
+
+                <div class="task" data-task="coffee" data-owner="me">
+                  <button class="check" type="button" aria-label="标记买咖啡豆为完成">
+                    <span class="check-dot"><svg class="icon" aria-hidden="true"><use href="#i-check"></use></svg></span>
+                  </button>
+                  <button class="task-open" type="button" aria-label="打开买咖啡豆详情">
+                    <span class="task-main">
+                      <span class="task-title">买咖啡豆</span>
+                      <span class="task-meta">
+                        <span class="who"><span class="avatar avatar-sm">张</span>我</span>
+                        <span class="pill pill-muted">待完成</span>
+                      </span>
+                    </span>
+                    <span class="task-side"><span class="task-time">15:00</span></span>
+                  </button>
+                </div>
+
+                <div class="task" data-task="lamp" data-owner="friend">
+                  <button class="check" type="button" aria-label="标记带露营灯为完成">
+                    <span class="check-dot"><svg class="icon" aria-hidden="true"><use href="#i-check"></use></svg></span>
+                  </button>
+                  <button class="task-open" type="button" aria-label="打开带露营灯详情">
+                    <span class="task-main">
+                      <span class="task-title">带露营灯</span>
+                      <span class="task-meta">
+                        <span class="who"><span class="avatar avatar-sm avatar-friend">林</span>林晓</span>
+                        <span class="pill pill-warning" id="lamp-pill">等好友订阅</span>
+                      </span>
+                    </span>
+                    <span class="task-side"><span class="task-time">18:00</span></span>
+                  </button>
+                </div>
+
+                <div class="task" data-task="route" data-owner="me">
+                  <button class="check" type="button" aria-label="标记打印路线图为完成">
+                    <span class="check-dot"><svg class="icon" aria-hidden="true"><use href="#i-check"></use></svg></span>
+                  </button>
+                  <button class="task-open" type="button" aria-label="打开打印路线图详情">
+                    <span class="task-main">
+                      <span class="task-title">打印路线图</span>
+                      <span class="task-meta">
+                        <span class="who"><span class="avatar avatar-sm">张</span>我</span>
+                        <span class="pill pill-muted">明天</span>
+                      </span>
+                    </span>
+                    <span class="task-side"><span class="task-time">明天</span></span>
+                  </button>
+                </div>
+              </div>
+
+              <div class="empty" id="empty-state" hidden>
+                <div>
+                  <div class="ph" aria-hidden="true"><svg class="icon"><use href="#i-list"></use></svg></div>
+                  <div class="t">今天还没有任务</div>
+                  <div class="d">新建一件待办，或从清单里挑一件今天要做的事。</div>
+                  <button class="btn btn-primary btn-sm" id="empty-create" type="button">新建任务</button>
+                </div>
+              </div>
+
+              <div id="loading-state" hidden>
+                <div class="skeleton" aria-label="正在同步清单">
+                  <div class="skeleton-row"><i></i><div class="lines"><i></i><i></i></div></div>
+                  <div class="skeleton-row"><i></i><div class="lines"><i></i><i></i></div></div>
+                  <div class="skeleton-row"><i></i><div class="lines"><i></i><i></i></div></div>
+                </div>
+                <div class="skeleton-label">正在同步清单…</div>
+              </div>
+
+              <div class="error-box" id="error-state" hidden>
+                <div>
+                  <div class="ph" aria-hidden="true"><svg class="icon"><use href="#i-alert"></use></svg></div>
+                  <div class="t">清单同步失败</div>
+                  <div class="d">网络不稳定，任务还在本地；恢复后会自动重试。</div>
+                  <button class="btn btn-ghost btn-sm" id="retry-sync" type="button">重试</button>
+                </div>
+              </div>
+            </div>
+
+            <nav class="tabbar" aria-label="底部导航">
+              <button class="tab active" type="button"><svg class="icon"><use href="#i-list"></use></svg>任务</button>
+              <button class="tab" type="button"><svg class="icon"><use href="#i-users"></use></svg>清单</button>
+              <button class="tab" type="button"><svg class="icon"><use href="#i-user"></use></svg>我</button>
+            </nav>
+
+            <div class="phone-overlay" id="me-detail" hidden></div>
+            <div class="phone-overlay" id="me-share" hidden></div>
+            <div class="toast" id="me-toast" role="status" aria-live="polite"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 好友视角 -->
+      <section class="phone-col" id="col-friend">
+        <div class="phone-label friend"><span class="dot"></span>好友 · 林晓</div>
+        <div class="device">
+          <div class="screen">
+            <div class="notch"></div>
+            <div class="statusbar"><span>9:41</span><span class="signal">5G ▮▮▮</span></div>
+            <div class="chat-topbar">
+              <button class="icon-btn" type="button" aria-label="返回"><svg class="icon"><use href="#i-back"></use></svg></button>
+              <div class="chat-title">
+                <h2>张鸿韦</h2>
+                <p>单聊 · CoDone 任务卡</p>
+              </div>
+              <button class="icon-btn" type="button" aria-label="聊天设置"><svg class="icon"><use href="#i-more"></use></svg></button>
+            </div>
+
+            <div class="chat-body" id="friend-chat">
+              <div class="chat-date">今天 10:12</div>
+              <div class="bubble incoming">周末露营的东西我列了个清单，你看下还缺什么。</div>
+              <div class="bubble outgoing">好，我看看。</div>
+
+              <div class="chat-card-sender" id="chat-card-sender" hidden>
+                <span class="avatar avatar-sm">张</span><span>张鸿韦</span>
+              </div>
+              <div class="chat-card" id="chat-task-card" hidden>
+                <div class="chat-card-head">
+                  <span class="mini-logo">C</span>
+                  <span>CoDone · 小程序</span>
+                  <span class="chat-tag">聊天工具模式</span>
+                </div>
+                <div class="chat-card-body">
+                  <h3>周末露营准备</h3>
+                  <p><span id="chat-card-count">4 项待办</span> · 2 人协作</p>
+                  <div class="chat-card-progress">
+                    <span class="track"><i id="chat-card-progress" style="width:25%"></i></span>
+                    <span class="count" id="chat-card-ratio">1/4</span>
+                  </div>
+                  <div class="who" id="chat-card-personal"><span class="avatar avatar-sm avatar-friend">林</span><span>有一项分给了你：带露营灯</span></div>
+                </div>
+                <div class="chat-card-foot">
+                  <span class="who"><svg class="icon"><use href="#i-clock"></use></svg>今天 18:00 截止</span>
+                  <button class="btn btn-primary" id="open-friend-detail" type="button">去完成</button>
+                </div>
+              </div>
+
+              <div class="chat-reminder" id="chat-reminder" hidden>
+                <div class="line">
+                  <svg class="icon" aria-hidden="true"><use href="#i-bell"></use></svg>
+                  <div><b>张鸿韦提醒你完成</b><br>@林晓 请完成：带露营灯</div>
+                </div>
+                <button class="link" id="reminder-open" type="button">查看任务</button>
+              </div>
+
+              <div class="chat-system" id="chat-system" hidden>林晓完成了「带露营灯」</div>
+            </div>
+
+            <div class="chat-composer" aria-label="聊天输入区">
+              <div class="composer-input">回复张鸿韦…</div>
+              <button class="composer-send" type="button" aria-label="发送"><svg class="icon"><use href="#i-send"></use></svg></button>
+            </div>
+
+            <div class="notification-banner" id="service-notification" hidden role="button" tabindex="0" aria-label="打开服务通知">
+              <span class="notice-icon" aria-hidden="true"><svg class="icon"><use href="#i-bell"></use></svg></span>
+              <span class="copy">
+                <b>服务通知 · CoDone</b>
+                <span>任务到期提醒：带露营灯 · 今天 18:00</span>
+              </span>
+              <button class="close" id="close-notification" type="button" aria-label="关闭通知">×</button>
+            </div>
+
+            <div class="phone-overlay" id="friend-detail" hidden></div>
+            <div class="phone-overlay" id="friend-subscribe" hidden></div>
+            <div class="toast" id="friend-toast" role="status" aria-live="polite"></div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- 演示控制 -->
+    <aside class="demo-panel" aria-labelledby="demo-title">
+      <h2 id="demo-title">演示控制</h2>
+      <p class="lead">按顺序点一遍，重点看好友订阅前后，服务通知能不能发出去。</p>
+
+      <div class="steps">
+        <div class="step" id="step-1">
+          <span class="step-num">1</span>
+          <div class="step-copy"><b>我发出邀请</b><span>在我的手机点「邀请」，把清单发给林晓。</span></div>
+        </div>
+        <div class="step" id="step-2">
+          <span class="step-num">2</span>
+          <div class="step-copy"><b>好友订阅提醒</b><span>林晓点开任务，自己点「订阅提醒」。</span></div>
+        </div>
+        <div class="step" id="step-3">
+          <span class="step-num">3</span>
+          <div class="step-copy"><b>到期发送通知</b><span>点下方「模拟到期」，看服务通知是否出现。</span></div>
+        </div>
+      </div>
+
+      <div class="status-list" aria-label="当前演示状态">
+        <div class="status-row"><span class="k">邀请</span><span class="v muted" id="status-invite">未发送</span></div>
+        <div class="status-row"><span class="k">好友订阅</span><span class="v warn" id="status-subscribe">未开启</span></div>
+        <div class="status-row"><span class="k">服务通知</span><span class="v muted" id="status-notify">未发送</span></div>
+      </div>
+
+      <div class="demo-actions">
+        <button class="btn btn-primary" id="simulate-due" type="button">
+          <svg class="icon" aria-hidden="true"><use href="#i-bell"></use></svg>
+          模拟到期
+        </button>
+        <button class="btn btn-ghost" id="demo-remind" type="button">
+          <svg class="icon" aria-hidden="true"><use href="#i-share"></use></svg>
+          让张鸿韦发一条 @提醒
+        </button>
+      </div>
+
+      <div class="assumption">
+        <h3>界面状态</h3>
+        <div class="state-switch" role="group" aria-label="切换任务列表状态">
+          <button class="state-btn active" data-state="normal" type="button">正常</button>
+          <button class="state-btn" data-state="empty" type="button">空态</button>
+          <button class="state-btn" data-state="loading" type="button">加载</button>
+          <button class="state-btn" data-state="error" type="button">错误</button>
+        </div>
+      </div>
+
+      <div class="rule-note">
+        <b>这个原型刻意保留了微信的硬限制</b>
+        好友没点订阅时，「模拟到期」不会发出服务通知。真实小程序里，你也不能替好友订阅，不能绕过这一步。
+      </div>
+
+      <div class="assumption">
+        <h3>本轮要验证的假设</h3>
+        <ul>
+          <li>好友愿不愿意为一件待办点一次「订阅提醒」。</li>
+          <li>任务卡放在聊天里，是否比单纯的任务列表更自然。</li>
+          <li>一次订阅只够发一条，是否还能接受。</li>
+        </ul>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var state = {
+    inviteSent: false,
+    friendSubscribed: false,
+    notificationSent: false,
+    notificationRead: false,
+    reminderSent: false,
+    taskDone: false,
+    demoState: "normal",
+    mobileView: "me",
+    filter: "today",
+    theme: "light"
+  };
+
+  var $ = function(id){ return document.getElementById(id); };
+  var $$ = function(sel, root){ return Array.prototype.slice.call((root || document).querySelectorAll(sel)); };
+
+  function showToast(which, message){
+    var el = which === "friend" ? $("friend-toast") : $("me-toast");
+    if(!el) return;
+    el.textContent = message;
+    el.classList.add("show");
+    window.clearTimeout(el._timer);
+    el._timer = window.setTimeout(function(){ el.classList.remove("show"); }, 2400);
+  }
+
+  function setStatus(id, text, tone){
+    var el = $(id);
+    if(!el) return;
+    el.textContent = text;
+    el.className = "v " + (tone || "muted");
+  }
+
+  function taskCount(){
+    return state.taskDone ? 2 : 1;
+  }
+
+  function render(){
+    var total = 4;
+    var done = taskCount();
+    var ratio = Math.round((done / total) * 100);
+    var left = total - done;
+
+    $("hero-count").textContent = total + " 项待办";
+    $("hero-left").textContent = left > 0 ? "还差 " + left + " 项" : "全部完成";
+    var circumference = 2 * Math.PI * 19;
+    var ring = $("ring-value");
+    if(ring){
+      ring.style.strokeDasharray = circumference;
+      ring.style.strokeDashoffset = circumference * (1 - done / total);
+    }
+    $("ring-label").textContent = done + "/" + total;
+    $("chat-card-count").textContent = total + " 项待办";
+    $("chat-card-progress").style.width = ratio + "%";
+    $("chat-card-ratio").textContent = done + "/" + total;
+    $("chat-card-personal").innerHTML = state.taskDone
+      ? '<span class="avatar avatar-sm avatar-friend">林</span><span>带露营灯已完成</span>'
+      : '<span class="avatar avatar-sm avatar-friend">林</span><span>有一项分给了你：带露营灯</span>';
+    var openFriend = $("open-friend-detail");
+    if(openFriend){
+      openFriend.textContent = state.taskDone ? "查看" : "去完成";
+      openFriend.className = "btn " + (state.taskDone ? "btn-ghost" : "btn-primary");
+    }
+
+    var lampTask = document.querySelector('[data-task="lamp"]');
+    if(lampTask){
+      lampTask.classList.toggle("done", state.taskDone);
+      var check = lampTask.querySelector(".check");
+      if(check) check.setAttribute("aria-label", state.taskDone ? "标记带露营灯为未完成" : "标记带露营灯为完成");
+    }
+    var lampPill = $("lamp-pill");
+    if(lampPill){
+      if(state.taskDone){
+        lampPill.textContent = "已完成";
+        lampPill.className = "pill pill-success";
+      } else if(state.friendSubscribed){
+        lampPill.textContent = "已订阅提醒";
+        lampPill.className = "pill pill-primary";
+      } else {
+        lampPill.textContent = "等好友订阅";
+        lampPill.className = "pill pill-warning";
+      }
+    }
+
+    var visibleCount = 0;
+    $$(".task").forEach(function(task){
+      var taskIsDone = task.classList.contains("done");
+      var inToday = task.dataset.task !== "route";
+      var show = state.filter === "today" ? inToday : state.filter === "done" ? taskIsDone : true;
+      task.hidden = !show;
+      if(show) visibleCount++;
+    });
+    $("task-summary").textContent = state.demoState === "empty"
+      ? "0 项待办"
+      : state.demoState === "loading"
+        ? "同步中"
+        : state.demoState === "error"
+          ? "—"
+          : visibleCount + " 项待办";
+
+    $("chat-task-card").hidden = !state.inviteSent;
+    $("chat-card-sender").hidden = !state.inviteSent;
+    $("chat-reminder").hidden = !state.reminderSent;
+    $("chat-system").hidden = !state.taskDone;
+    $("me-notice").hidden = !state.notificationSent;
+    $("service-notification").hidden = !state.notificationSent || state.notificationRead;
+
+    setStatus("status-invite", state.inviteSent ? "已发送" : "未发送", state.inviteSent ? "ok" : "muted");
+    setStatus("status-subscribe", state.friendSubscribed ? "已开启" : "未开启", state.friendSubscribed ? "ok" : "warn");
+    setStatus("status-notify", state.notificationSent ? (state.notificationRead ? "已读" : "已送达") : "未发送", state.notificationSent ? "ok" : "muted");
+
+    $("step-1").className = "step " + (state.inviteSent ? "done" : "active");
+    $("step-2").className = "step " + (state.friendSubscribed ? "done" : state.inviteSent ? "active" : "");
+    $("step-3").className = "step " + (state.notificationSent ? "done" : state.friendSubscribed ? "active" : "");
+    $("step-1").querySelector(".step-num").textContent = state.inviteSent ? "✓" : "1";
+    $("step-2").querySelector(".step-num").textContent = state.friendSubscribed ? "✓" : "2";
+    $("step-3").querySelector(".step-num").textContent = state.notificationSent ? "✓" : "3";
+
+    renderDemoState();
+  }
+
+  function renderDemoState(){
+    var list = $("task-list");
+    var empty = $("empty-state");
+    var loading = $("loading-state");
+    var error = $("error-state");
+    if(!list || !empty || !loading || !error) return;
+
+    list.hidden = state.demoState !== "normal";
+    empty.hidden = state.demoState !== "empty";
+    loading.hidden = state.demoState !== "loading";
+    error.hidden = state.demoState !== "error";
+  }
+
+  function openOverlay(id){
+    var el = $(id);
+    if(el) el.hidden = false;
+  }
+
+  function closeOverlay(id){
+    var el = $(id);
+    if(el) el.hidden = true;
+  }
+
+  function detailMarkup(role){
+    var isFriend = role === "friend";
+    var subscribed = state.friendSubscribed;
+    var done = state.taskDone;
+    var statusClass = done ? "pill-success" : "pill-warning";
+    var statusText = done ? "已完成" : "待完成";
+    var subscribeText = subscribed ? "已订阅 1 次提醒" : "尚未订阅提醒";
+    var subscribeClass = subscribed ? "" : " warn";
+
+    var action = "";
+    if(isFriend){
+      action =
+        '<button class="btn ' + (subscribed || done ? "btn-ghost" : "btn-primary") + '" id="detail-subscribe" type="button" ' + (subscribed || done ? "disabled" : "") + '>' +
+          (done ? "任务已完成" : subscribed ? "已订阅 1 次" : "订阅提醒") +
+        '</button>' +
+        '<button class="btn ' + (done ? "btn-ghost" : "btn-soft") + '" id="detail-done" type="button" ' + (done ? "disabled" : "") + '>' +
+          (done ? "已完成" : "标记完成") +
+        '</button>';
+    } else {
+      action =
+        '<button class="btn btn-primary" id="detail-remind" type="button"' + (state.taskDone ? " disabled" : "") + '>提醒好友</button>' +
+        '<button class="btn btn-ghost" id="detail-edit" type="button">编辑任务</button>';
+    }
+
+    return '' +
+      '<div class="detail-topbar">' +
+        '<button class="icon-btn" type="button" data-close="1" aria-label="返回"><svg class="icon"><use href="#i-back"></use></svg></button>' +
+        '<h2>任务详情</h2>' +
+        '<button class="icon-btn" type="button" aria-label="更多"><svg class="icon"><use href="#i-more"></use></svg></button>' +
+      '</div>' +
+      '<div class="detail-body">' +
+        '<div class="detail-status"><span class="pill ' + statusClass + '">' + statusText + '</span><span class="pill pill-primary">今天 18:00</span></div>' +
+        '<h1 class="detail-title">带露营灯</h1>' +
+        '<div class="detail-card">' +
+          '<div class="detail-row"><span class="k">所属清单</span><span class="v">周末露营准备</span></div>' +
+          '<div class="detail-row"><span class="k">负责人</span><span class="v"><span class="avatar avatar-sm avatar-friend">林</span>林晓</span></div>' +
+          '<div class="detail-row"><span class="k">截止时间</span><span class="v num">今天 18:00</span></div>' +
+          '<div class="detail-row"><span class="k">提醒状态</span><span class="v">' + (subscribed ? '<span class="pill pill-success">已订阅</span>' : '<span class="pill pill-warning">未订阅</span>') + '</span></div>' +
+        '</div>' +
+        '<div class="detail-card">' +
+          '<div class="subscribe-state' + subscribeClass + '">' +
+            '<svg class="icon" aria-hidden="true"><use href="' + (subscribed ? "#i-check-circle" : "#i-alert") + '"></use></svg>' +
+            '<span>' + subscribeText + (subscribed ? "，到期时进入微信服务通知。" : "；订阅后才能收到到期服务通知。") + '</span>' +
+          '</div>' +
+        '</div>' +
+        '<div class="detail-card">' +
+          '<p class="note-text">营地灯在玄关柜第二层，记得带上备用电池。到了营地先试亮一次。</p>' +
+        '</div>' +
+        '<div class="detail-card">' +
+          '<div class="timeline">' +
+            '<div class="timeline-item"><i></i><div>张鸿韦创建了任务<time>今天 10:12</time></div></div>' +
+            '<div class="timeline-item"><i></i><div>林晓加入了清单<time>今天 10:13</time></div></div>' +
+            (state.notificationSent ? '<div class="timeline-item"><i></i><div>服务通知已送达<time>今天 18:00</time></div></div>' : '') +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="detail-bottom">' + action + '</div>';
+  }
+
+  function openDetail(role){
+    var overlay = role === "friend" ? $("friend-detail") : $("me-detail");
+    if(!overlay) return;
+    overlay.innerHTML = detailMarkup(role);
+    overlay.hidden = false;
+
+    var close = overlay.querySelector("[data-close]");
+    if(close) close.addEventListener("click", function(){ overlay.hidden = true; });
+
+    var sub = overlay.querySelector("#detail-subscribe");
+    if(sub) sub.addEventListener("click", openSubscribeSheet);
+
+    var doneBtn = overlay.querySelector("#detail-done");
+    if(doneBtn) doneBtn.addEventListener("click", function(){
+      state.taskDone = true;
+      overlay.hidden = true;
+      render();
+      showToast("friend", "已标记完成，清单进度已同步。");
+    });
+
+    var remind = overlay.querySelector("#detail-remind");
+    if(remind) remind.addEventListener("click", function(){
+      if(!state.inviteSent){
+        showToast("me", "先发出邀请，好友才能收到任务。");
+        return;
+      }
+      state.reminderSent = true;
+      overlay.hidden = true;
+      render();
+      showToast("me", "已在聊天里提醒林晓。");
+    });
+
+    var edit = overlay.querySelector("#detail-edit");
+    if(edit) edit.addEventListener("click", function(){
+      showToast("me", "原型里先不展开编辑表单。");
+    });
+  }
+
+  function openShareSheet(){
+    var overlay = $("me-share");
+    if(!overlay) return;
+    overlay.innerHTML = '' +
+      '<div class="sheet-mask" data-mask="1">' +
+        '<div class="sheet" role="dialog" aria-modal="true" aria-labelledby="share-title">' +
+          '<div class="sheet-handle"></div>' +
+          '<h2 id="share-title">发送清单</h2>' +
+          '<p class="sub">选择一位好友，把「周末露营准备」发给他</p>' +
+          '<button class="share-option" id="share-friend" type="button">' +
+            '<span class="avatar avatar-friend">林</span>' +
+            '<span class="copy"><b>林晓</b><span>微信好友 · 单聊</span></span>' +
+            '<svg class="icon" aria-hidden="true"><use href="#i-chevron"></use></svg>' +
+          '</button>' +
+          '<button class="share-option" id="share-group" type="button">' +
+            '<span class="avatar">群</span>' +
+            '<span class="copy"><b>周末露营群</b><span>群聊 · 3 人</span></span>' +
+            '<svg class="icon" aria-hidden="true"><use href="#i-chevron"></use></svg>' +
+          '</button>' +
+          '<div class="sheet-actions"><button class="btn btn-ghost" data-close-share="1" type="button">取消</button></div>' +
+        '</div>' +
+      '</div>';
+    overlay.hidden = false;
+
+    var mask = overlay.querySelector("[data-mask]");
+    var close = overlay.querySelector("[data-close-share]");
+    function closeShare(){ overlay.hidden = true; }
+    if(mask) mask.addEventListener("click", function(e){ if(e.target === mask) closeShare(); });
+    if(close) close.addEventListener("click", closeShare);
+
+    var friend = overlay.querySelector("#share-friend");
+    if(friend) friend.addEventListener("click", function(){
+      state.inviteSent = true;
+      closeShare();
+      render();
+      showToast("me", "清单已发给林晓，等他在聊天里打开。");
+      showToast("friend", "张鸿韦发来一张清单卡片。");
+    });
+
+    var group = overlay.querySelector("#share-group");
+    if(group) group.addEventListener("click", function(){
+      closeShare();
+      showToast("me", "群聊邀请先留到下一版，这一版先验单聊。");
+    });
+  }
+
+  function openSubscribeSheet(){
+    var overlay = $("friend-subscribe");
+    if(!overlay) return;
+    overlay.innerHTML = '' +
+      '<div class="sheet-mask" data-mask="1">' +
+        '<div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sub-title">' +
+          '<div class="sheet-handle"></div>' +
+          '<h2 id="sub-title">订阅消息</h2>' +
+          '<p class="sub">CoDone 请求订阅「任务到期提醒」</p>' +
+          '<div class="subscribe-request">' +
+            '<span class="mini-logo">C</span>' +
+            '<div><h3>任务到期提醒</h3><p>订阅后，任务到期时会通过微信服务通知提醒你。每次订阅仅可发送 1 条提醒。</p></div>' +
+          '</div>' +
+          '<label class="checkline"><input type="checkbox" id="always-check"> 总是保持以上选择，不再询问</label>' +
+          '<div class="sheet-actions">' +
+            '<button class="btn btn-ghost" id="sub-cancel" type="button">取消</button>' +
+            '<button class="btn btn-primary" id="sub-allow" type="button">允许</button>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+    overlay.hidden = false;
+
+    function closeSheet(){ overlay.hidden = true; }
+    var cancel = overlay.querySelector("#sub-cancel");
+    if(cancel) cancel.addEventListener("click", closeSheet);
+    var mask = overlay.querySelector("[data-mask]");
+    if(mask) mask.addEventListener("click", function(e){ if(e.target === mask) closeSheet(); });
+
+    var allow = overlay.querySelector("#sub-allow");
+    if(allow) allow.addEventListener("click", function(){
+      state.friendSubscribed = true;
+      closeSheet();
+      render();
+      openDetail("friend");
+      showToast("friend", "已订阅 1 次提醒，到期会进入服务通知。");
+    });
+  }
+
+  function simulateDue(){
+    if(!state.inviteSent){
+      showToast("me", "先发出邀请，好友才会收到任务。");
+      return;
+    }
+    if(state.taskDone){
+      showToast("me", "任务已完成，不再发送到期提醒。");
+      return;
+    }
+    if(!state.friendSubscribed){
+      showToast("friend", "发送失败：林晓还没有订阅提醒。");
+      showToast("me", "服务通知未发送：好友没有订阅。");
+      return;
+    }
+    if(state.notificationSent){
+      showToast("me", "这次订阅的额度已经用掉了。");
+      return;
+    }
+    state.notificationSent = true;
+    state.notificationRead = false;
+    render();
+    showToast("friend", "服务通知已送达：带露营灯 · 今天 18:00");
+  }
+
+  function sendReminder(){
+    if(!state.inviteSent){
+      showToast("me", "先发出邀请，好友才能收到任务。");
+      return;
+    }
+    if(state.taskDone){
+      showToast("me", "任务已经完成，不需要再催。");
+      return;
+    }
+    state.reminderSent = true;
+    render();
+    showToast("me", "已在聊天里提醒林晓。");
+    showToast("friend", "张鸿韦在聊天里提醒了你。");
+  }
+
+  function reset(){
+    state.inviteSent = false;
+    state.friendSubscribed = false;
+    state.notificationSent = false;
+    state.notificationRead = false;
+    state.reminderSent = false;
+    state.taskDone = false;
+    state.demoState = "normal";
+    state.mobileView = "me";
+    state.filter = "today";
+    $("me-detail").hidden = true;
+    $("me-share").hidden = true;
+    $("friend-detail").hidden = true;
+    $("friend-subscribe").hidden = true;
+    $$(".state-btn").forEach(function(btn){ btn.classList.toggle("active", btn.dataset.state === "normal"); });
+    $$(".seg-btn").forEach(function(btn){
+      var isToday = btn.dataset.filter === "today";
+      btn.classList.toggle("active", isToday);
+      btn.setAttribute("aria-pressed", isToday ? "true" : "false");
+    });
+    switchMobileView("me");
+    render();
+    showToast("me", "演示已重置。");
+  }
+
+  function switchMobileView(view){
+    state.mobileView = view;
+    $("col-me").classList.toggle("is-visible", view === "me");
+    $("col-friend").classList.toggle("is-visible", view === "friend");
+    $("view-me").classList.toggle("active", view === "me");
+    $("view-friend").classList.toggle("active", view === "friend");
+  }
+
+  function applyTheme(theme){
+    state.theme = theme;
+    document.documentElement.dataset.theme = theme;
+    var isDark = theme === "dark";
+    $("theme-label").textContent = isDark ? "浅色" : "深色";
+    $("theme-toggle").setAttribute("aria-pressed", isDark ? "true" : "false");
+    var use = $("theme-icon").querySelector("use");
+    if(use) use.setAttribute("href", isDark ? "#i-sun" : "#i-moon");
+  }
+
+  function setDemoState(next){
+    state.demoState = next;
+    $$(".state-btn").forEach(function(btn){ btn.classList.toggle("active", btn.dataset.state === next); });
+    render();
+  }
+
+  // 任务行：点击打开详情；勾选按钮单独处理完成。
+  $$(".task").forEach(function(task){
+    var open = task.querySelector(".task-open");
+    if(open) open.addEventListener("click", function(){
+      openDetail(task.closest("#col-friend") ? "friend" : "me");
+    });
+    var check = task.querySelector(".check");
+    if(check) check.addEventListener("click", function(e){
+      if(task.dataset.task === "lamp"){
+        state.taskDone = !state.taskDone;
+        render();
+        showToast("me", state.taskDone ? "带露营灯已完成。" : "已恢复为待完成。");
+      } else {
+        showToast("me", "原型只同步「带露营灯」这一项。");
+      }
+    });
+  });
+
+  $("share-btn").addEventListener("click", openShareSheet);
+  $("new-task").addEventListener("click", function(){ showToast("me", "新建任务表单在下一版展开。"); });
+  $("empty-create").addEventListener("click", function(){ setDemoState("normal"); showToast("me", "已切回正常列表。"); });
+  $("retry-sync").addEventListener("click", function(){ setDemoState("normal"); showToast("me", "同步已恢复。"); });
+  $("open-friend-detail").addEventListener("click", function(){ openDetail("friend"); });
+  $("reminder-open").addEventListener("click", function(){ openDetail("friend"); });
+  $("service-notification").addEventListener("click", function(e){
+    if(e.target.closest("#close-notification")) return;
+    state.notificationRead = true;
+    render();
+    openDetail("friend");
+  });
+  $("service-notification").addEventListener("keydown", function(e){
+    if(e.key === "Enter" || e.key === " "){
+      e.preventDefault();
+      state.notificationRead = true;
+      render();
+      openDetail("friend");
+    }
+  });
+  $("close-notification").addEventListener("click", function(e){
+    e.stopPropagation();
+    state.notificationRead = true;
+    render();
+  });
+  $("simulate-due").addEventListener("click", simulateDue);
+  $("demo-remind").addEventListener("click", sendReminder);
+  $("theme-toggle").addEventListener("click", function(){
+    applyTheme(state.theme === "dark" ? "light" : "dark");
+  });
+  $$(".seg-btn").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      state.filter = btn.dataset.filter;
+      $$(".seg-btn").forEach(function(item){
+        var active = item === btn;
+        item.classList.toggle("active", active);
+        item.setAttribute("aria-pressed", active ? "true" : "false");
+      });
+      render();
+    });
+  });
+  $("reset-demo").addEventListener("click", reset);
+  $("view-me").addEventListener("click", function(){ switchMobileView("me"); });
+  $("view-friend").addEventListener("click", function(){ switchMobileView("friend"); });
+  $$(".state-btn").forEach(function(btn){
+    btn.addEventListener("click", function(){ setDemoState(btn.dataset.state); });
+  });
+
+  document.addEventListener("keydown", function(e){
+    if(e.key === "Escape"){
+      $("me-detail").hidden = true;
+      $("me-share").hidden = true;
+      $("friend-detail").hidden = true;
+      $("friend-subscribe").hidden = true;
+    }
+  });
+
+  applyTheme("light");
+  render();
+})();
+</script>
+</body>
+</html>
