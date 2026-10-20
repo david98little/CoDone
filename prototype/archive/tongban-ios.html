@@ -1,0 +1,1177 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>同办 · iOS 液态玻璃原型</title>
+<style>
+:root{
+  --fg:#0B1220;
+  --accent:#0B7A6B;
+  --accent-deep:#086355;
+  --coral:#FF8A65;
+  --danger:#D92D20;
+  --white:#FFFFFF;
+  --surface:#FFFFFF;
+  --bg:#EEF3F8;
+  --ink-rgb:11 18 32;
+  --white-rgb:255 255 255;
+  --green-rgb:11 122 107;
+  --coral-rgb:255 138 101;
+  --shadow-rgb:31 38 135;
+  --muted:rgb(var(--ink-rgb) / .62);
+  --border:rgb(var(--ink-rgb) / .08);
+  --ambient-base-1:#EDF3F9;
+  --ambient-base-2:#F6F1F5;
+  --ambient-base-3:#F8F1E9;
+  --ambient-blue:#C4D7E9;
+  --ambient-lilac:#DCD3EA;
+  --ambient-apricot:#F2DCC6;
+  --app-1:#F3F8FA;
+  --app-2:#FBF8F5;
+  --app-3:#F4F0F7;
+  --chat-1:#F0F6F6;
+  --chat-2:#F6F2F6;
+  --chat-3:#F8F3EC;
+  --metal-1:#464C54;
+  --metal-2:#171B20;
+  --metal-3:#0B0E12;
+  --metal-4:#2E343C;
+  --island:#05070A;
+  --font-ui:-apple-system, BlinkMacSystemFont, "SF Pro Display", "PingFang SC", "Microsoft YaHei", sans-serif;
+  --r-phone:54px;
+  --r-screen:44px;
+  --r-card:24px;
+  --r-card-sm:20px;
+  --r-sheet:32px;
+  --r-pill:999px;
+  --glass-bg:linear-gradient(135deg, rgb(var(--white-rgb) / .68), rgb(var(--white-rgb) / .34));
+  --glass-border:rgb(var(--white-rgb) / .72);
+  --glass-shadow:0 18px 48px rgb(var(--shadow-rgb) / .14), inset 0 1px 0 rgb(var(--white-rgb) / .92);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;overflow:hidden;}
+body{
+  font-family:var(--font-ui);
+  color:var(--fg);
+  background:
+    radial-gradient(900px 700px at 12% 10%, rgb(var(--white-rgb) / .58), transparent 70%),
+    radial-gradient(1100px 800px at 88% 16%, rgb(var(--coral-rgb) / .09), transparent 68%),
+    linear-gradient(155deg, var(--ambient-base-1), var(--ambient-base-2) 56%, var(--ambient-base-3));
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  -webkit-tap-highlight-color:transparent;
+}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;touch-action:manipulation;}
+button:disabled{cursor:default;}
+svg{display:block;}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px;}
+.btn-primary:focus-visible{outline-color:var(--fg);}
+.sprite{position:absolute;width:0;height:0;overflow:hidden;}
+
+/* ---------- environment + device ---------- */
+.ambient{position:fixed;inset:0;overflow:hidden;pointer-events:none;}
+.ambient span{position:absolute;border-radius:50%;filter:blur(90px);opacity:.55;}
+.ambient span:nth-child(1){width:560px;height:560px;left:-130px;top:-150px;background:var(--ambient-blue);}
+.ambient span:nth-child(2){width:480px;height:480px;right:-110px;top:16%;background:var(--ambient-lilac);}
+.ambient span:nth-child(3){width:600px;height:520px;left:18%;bottom:-220px;background:var(--ambient-apricot);}
+.stage{position:fixed;inset:0;display:grid;place-items:center;overflow:hidden;}
+.stage::before{content:"";position:absolute;left:50%;top:50%;width:600px;height:700px;border-radius:50%;transform:translate(-50%,-50%);background:radial-gradient(closest-side, rgb(var(--white-rgb) / .55), transparent 100%);filter:blur(18px);pointer-events:none;}
+.device{position:relative;width:413px;height:872px;transform-origin:center center;z-index:2;will-change:transform;}
+.side-btn{position:absolute;display:block;background:linear-gradient(180deg,var(--metal-1),var(--metal-3));box-shadow:inset 0 0 0 1px rgb(var(--white-rgb) / .12);pointer-events:none;}
+.side-btn.vol1{left:-3px;top:168px;width:3px;height:30px;border-radius:3px 0 0 3px;}
+.side-btn.vol2{left:-3px;top:212px;width:3px;height:54px;border-radius:3px 0 0 3px;}
+.side-btn.power{right:-3px;top:208px;width:3px;height:84px;border-radius:0 3px 3px 0;}
+.phone{
+  position:relative;width:413px;height:872px;padding:10px;border-radius:var(--r-phone);
+  background:linear-gradient(150deg,var(--metal-1) 0%,var(--metal-2) 24%,var(--metal-3) 54%,var(--metal-4) 81%,var(--metal-2) 100%);
+  box-shadow:
+    0 40px 80px rgb(var(--shadow-rgb) / .22),
+    0 12px 32px rgb(var(--ink-rgb) / .14),
+    inset 0 0 0 1px rgb(var(--white-rgb) / .22),
+    inset 0 2px 2px rgb(var(--white-rgb) / .26),
+    inset 0 -2px 3px rgb(var(--ink-rgb) / .55);
+}
+.screen{
+  position:relative;width:393px;height:852px;overflow:hidden;border-radius:var(--r-screen);isolation:isolate;
+  background:
+    radial-gradient(55% 34% at 8% 0%, rgb(var(--green-rgb) / .055), transparent 70%),
+    radial-gradient(45% 30% at 100% 18%, rgb(var(--coral-rgb) / .06), transparent 72%),
+    linear-gradient(165deg, var(--app-1), var(--app-2) 54%, var(--app-3));
+  box-shadow:inset 0 0 0 1px rgb(var(--ink-rgb) / .20);
+}
+.screen::after{
+  content:"";position:absolute;inset:0;z-index:75;border-radius:var(--r-screen);pointer-events:none;
+  background:linear-gradient(125deg, rgb(var(--white-rgb) / .20) 0%, rgb(var(--white-rgb) / .04) 20%, transparent 40%);
+  box-shadow:inset 0 0 0 1px rgb(var(--ink-rgb) / .12);
+}
+.dynamic-island{position:absolute;top:11px;left:50%;transform:translateX(-50%);width:104px;height:28px;border-radius:20px;background:var(--island);z-index:80;box-shadow:inset 0 0 0 1px rgb(var(--white-rgb) / .05);pointer-events:none;}
+.dynamic-island::after{content:"";position:absolute;right:14px;top:9px;width:9px;height:9px;border-radius:50%;background:radial-gradient(circle at 35% 35%, var(--metal-4), var(--island) 70%);}
+.statusbar{position:absolute;top:0;left:0;right:0;height:54px;z-index:40;display:flex;align-items:center;justify-content:space-between;padding:0 26px 0 30px;color:var(--fg);pointer-events:none;}
+.status-time{font-size:15px;line-height:1;font-weight:600;letter-spacing:.01em;font-variant-numeric:tabular-nums;}
+.status-icons{display:flex;align-items:center;gap:6px;}
+.status-icons .ic{width:17px;height:11px;}
+.status-icons .batt{width:25px;height:12px;}
+
+/* ---------- mini program nav ---------- */
+.mini-nav{position:absolute;top:54px;left:0;right:0;height:50px;z-index:20;display:flex;align-items:center;justify-content:space-between;padding:0 16px;background:linear-gradient(180deg, rgb(var(--white-rgb) / .58), rgb(var(--white-rgb) / .30));backdrop-filter:blur(24px) saturate(170%);-webkit-backdrop-filter:blur(24px) saturate(170%);border-bottom:1px solid rgb(var(--white-rgb) / .55);box-shadow:0 1px 0 rgb(var(--ink-rgb) / .04);}
+.brand{display:flex;align-items:center;gap:8px;min-width:0;}
+.brand-mark{width:28px;height:28px;flex:none;border-radius:9px;display:grid;place-items:center;background:rgb(var(--white-rgb) / .55);border:1px solid rgb(var(--white-rgb) / .82);box-shadow:0 2px 8px rgb(var(--shadow-rgb) / .08), inset 0 1px 0 rgb(var(--white-rgb) / .9);color:var(--fg);}
+.brand-mark svg{width:18px;height:18px;}
+.brand-name{font-size:16px;line-height:1;font-weight:600;letter-spacing:-.01em;}
+.mp-capsule{display:flex;align-items:stretch;width:84px;height:32px;flex:none;border-radius:999px;overflow:hidden;background:linear-gradient(135deg, rgb(var(--white-rgb) / .46), rgb(var(--white-rgb) / .22));border:1px solid rgb(var(--white-rgb) / .68);box-shadow:0 3px 12px rgb(var(--shadow-rgb) / .06);backdrop-filter:blur(18px) saturate(160%);-webkit-backdrop-filter:blur(18px) saturate(160%);color:rgb(var(--ink-rgb) / .55);}
+.mp-seg{width:50%;display:grid;place-items:center;}
+.mp-seg + .mp-seg{border-left:1px solid rgb(var(--ink-rgb) / .09);}
+.mp-seg svg{width:16px;height:16px;}
+
+/* ---------- views ---------- */
+.views{position:absolute;inset:104px 0 0;z-index:5;overflow:hidden;}
+.view{position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;padding:8px 16px 104px;opacity:0;transform:translateY(8px);visibility:hidden;pointer-events:none;transition:opacity .24s ease, transform .24s ease, visibility 0s linear .24s;scrollbar-width:none;}
+.view.is-active{opacity:1;transform:none;visibility:visible;pointer-events:auto;transition-delay:0s;}
+.view::-webkit-scrollbar,.chat-scroll::-webkit-scrollbar,.detail-body::-webkit-scrollbar{display:none;}
+.greeting{margin-bottom:16px;padding-top:4px;}
+.date{font-size:12px;line-height:1.4;font-weight:500;letter-spacing:.04em;color:var(--muted);}
+.greeting h1{font-size:34px;line-height:1.15;font-weight:700;letter-spacing:-.025em;margin-top:4px;}
+.greet-sub{font-size:14px;line-height:1.5;color:var(--muted);margin-top:4px;}
+.page-head{padding:4px 2px 16px;}
+.page-head h1{font-size:28px;line-height:1.2;font-weight:700;letter-spacing:-.02em;}
+.page-head p{font-size:13px;line-height:1.5;color:var(--muted);margin-top:4px;}
+
+/* ---------- glass ---------- */
+.glass{background:var(--glass-bg);backdrop-filter:blur(28px) saturate(180%);-webkit-backdrop-filter:blur(28px) saturate(180%);border:1px solid var(--glass-border);box-shadow:var(--glass-shadow);}
+
+/* ---------- shared list summary ---------- */
+.summary{border-radius:var(--r-card);padding:16px;}
+.summary-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;}
+.summary-lead{min-width:0;}
+.eyebrow{display:flex;align-items:center;gap:5px;font-size:12px;line-height:1.4;font-weight:500;letter-spacing:.01em;color:var(--muted);}
+.eyebrow .ic{width:14px;height:14px;color:rgb(var(--ink-rgb) / .52);flex:none;}
+.summary-title{font-size:20px;line-height:1.25;font-weight:600;letter-spacing:-.015em;margin-top:4px;}
+.summary-bottom{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:12px;}
+.summary-people{display:flex;align-items:center;gap:8px;min-width:0;}
+.avatar-stack{display:flex;align-items:center;flex:none;}
+.avatar{width:28px;height:28px;flex:none;border-radius:50%;display:grid;place-items:center;font-size:11px;line-height:1;font-weight:600;color:var(--fg);border:2px solid rgb(var(--white-rgb) / .92);background:linear-gradient(150deg, rgb(var(--green-rgb) / .20), rgb(var(--white-rgb) / .72));}
+.avatar + .avatar{margin-left:-8px;}
+.avatar.coral{background:linear-gradient(150deg, rgb(var(--coral-rgb) / .36), rgb(var(--white-rgb) / .74));}
+.avatar.lg{width:40px;height:40px;font-size:13px;}
+.avatar.xs{width:28px;height:28px;font-size:10px;border-width:1.5px;}
+.avatar.sm{width:22px;height:22px;font-size:9px;border-width:1px;}
+.remaining{font-size:12px;line-height:1.4;color:var(--muted);white-space:nowrap;}
+.ring{position:relative;width:62px;height:62px;flex:none;}
+.ring svg{width:100%;height:100%;transform:rotate(-90deg);}
+.ring-track{fill:none;stroke:rgb(var(--ink-rgb) / .10);stroke-width:3.5;}
+.ring-fill{fill:none;stroke:var(--accent);stroke-width:3.5;stroke-linecap:round;stroke-dasharray:100;stroke-dashoffset:75;transition:stroke-dashoffset .55s cubic-bezier(.22,.8,.24,1);}
+.ring-label{position:absolute;inset:0;display:grid;place-items:center;font-size:13px;line-height:1;font-weight:600;letter-spacing:-.02em;font-variant-numeric:tabular-nums;}
+.ring.sm{width:46px;height:46px;}
+.ring.sm .ring-track,.ring.sm .ring-fill{stroke-width:3;}
+.ring.sm .ring-label{font-size:12px;}
+@keyframes ringPop{0%{transform:scale(1);}45%{transform:scale(1.06);}100%{transform:scale(1);}}
+.ring.pop{animation:ringPop .45s ease;}
+.glass-pill{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:4px;height:36px;padding:0 14px;flex:none;border-radius:var(--r-pill);background:linear-gradient(135deg, rgb(var(--white-rgb) / .62), rgb(var(--white-rgb) / .34));border:1px solid rgb(var(--white-rgb) / .78);box-shadow:0 4px 12px rgb(var(--shadow-rgb) / .08), inset 0 1px 0 rgb(var(--white-rgb) / .92);backdrop-filter:blur(18px) saturate(170%);-webkit-backdrop-filter:blur(18px) saturate(170%);font-size:12.5px;line-height:1;font-weight:600;letter-spacing:-.01em;color:var(--fg);}
+.glass-pill .ic,.glass-pill svg{width:14px;height:14px;flex:none;color:var(--accent);}
+.glass-pill::after{content:"";position:absolute;inset:-4px;border-radius:inherit;}
+.glass-pill.small{height:32px;padding:0 12px;font-size:12px;}
+.glass-pill.small::after{inset:-6px;}
+.glass-pill:hover{background:linear-gradient(135deg, rgb(var(--white-rgb) / .80), rgb(var(--white-rgb) / .50));}
+.summary-note{font-size:12px;color:var(--muted);white-space:nowrap;}
+
+/* ---------- segmented filter ---------- */
+.segments{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;height:52px;padding:3px;margin-top:16px;border-radius:var(--r-pill);background:linear-gradient(135deg, rgb(var(--white-rgb) / .56), rgb(var(--white-rgb) / .30));border:1px solid rgb(var(--white-rgb) / .66);box-shadow:0 10px 28px rgb(var(--shadow-rgb) / .09), inset 0 1px 0 rgb(var(--white-rgb) / .9);backdrop-filter:blur(26px) saturate(180%);-webkit-backdrop-filter:blur(26px) saturate(180%);}
+.seg{height:44px;border:1px solid transparent;border-radius:var(--r-pill);display:flex;align-items:center;justify-content:center;font-size:13px;line-height:1;font-weight:500;color:var(--muted);transition:background .16s ease,color .16s ease,box-shadow .16s ease;}
+.seg.is-on{background:rgb(var(--white-rgb) / .92);border-color:rgb(var(--ink-rgb) / .07);box-shadow:0 2px 8px rgb(var(--shadow-rgb) / .08), inset 0 1px 0 rgb(var(--white-rgb) / .9);color:var(--fg);font-weight:600;}
+.seg:hover{color:var(--fg);}
+.seg.is-on:hover{color:var(--fg);}
+
+/* ---------- section head + task list ---------- */
+.section-head{display:flex;align-items:center;justify-content:space-between;min-height:44px;margin:16px 2px 8px;}
+.section-head h2{font-size:16px;line-height:1.3;font-weight:600;letter-spacing:-.01em;}
+.task-wrap{position:relative;}
+.task-list{background:rgb(var(--white-rgb) / .86);border:1px solid rgb(var(--white-rgb) / .82);border-radius:var(--r-card);box-shadow:0 8px 24px rgb(var(--shadow-rgb) / .07);overflow:hidden;}
+.task-row{position:relative;display:flex;align-items:center;min-height:64px;padding:0 12px 0 2px;border-top:1px solid rgb(var(--ink-rgb) / .055);transition:background .16s ease;}
+.task-row:first-child{border-top:0;}
+.task-row:hover{background:rgb(var(--ink-rgb) / .022);}
+.task-row.is-friend::before{content:"";position:absolute;left:0;top:14px;bottom:14px;width:2px;border-radius:0 2px 2px 0;background:var(--coral);}
+.check{width:44px;height:44px;flex:none;display:grid;place-items:center;border-radius:14px;}
+.check-circle{width:24px;height:24px;border-radius:50%;border:1.5px solid rgb(var(--ink-rgb) / .24);background:rgb(var(--white-rgb) / .58);display:grid;place-items:center;color:var(--white);transition:background .2s ease,border-color .2s ease,transform .2s ease;}
+.check-circle svg{width:13px;height:13px;opacity:0;transform:scale(.6);transition:opacity .18s ease,transform .2s ease;}
+.is-done .check-circle{background:var(--accent);border-color:var(--accent);}
+.is-done .check-circle svg{opacity:1;transform:none;}
+.check:active .check-circle{transform:scale(.9);}
+.check:hover .check-circle{border-color:rgb(var(--ink-rgb) / .40);}
+.is-done .check:hover .check-circle{border-color:var(--accent);}
+.task-main{flex:1;min-width:0;min-height:44px;display:flex;align-items:center;gap:8px;padding:8px 0 8px 8px;text-align:left;border-radius:12px;color:inherit;}
+.task-text{flex:1;min-width:0;}
+.task-title{display:block;font-size:16px;line-height:1.35;font-weight:500;letter-spacing:-.012em;color:var(--fg);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.task-meta{display:flex;align-items:center;gap:5px;margin-top:2px;font-size:12px;line-height:1.4;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.dot{width:5px;height:5px;border-radius:50%;flex:none;}
+.dot.coral{background:var(--coral);}
+.dot.green{background:var(--accent);}
+.task-time{flex:none;padding-left:8px;font-size:12px;line-height:1.4;color:var(--muted);font-variant-numeric:tabular-nums;}
+.is-done .task-title{color:rgb(var(--ink-rgb) / .58);}
+.is-done .task-meta,.is-done .task-time{color:rgb(var(--ink-rgb) / .58);}
+.empty{padding:28px 20px;text-align:center;color:var(--muted);font-size:13px;line-height:1.5;}
+.empty svg{width:24px;height:24px;margin:0 auto 8px;color:rgb(var(--ink-rgb) / .30);}
+
+/* ---------- inline composer ---------- */
+.composer{display:flex;gap:8px;margin-bottom:8px;padding:8px;border-radius:var(--r-card-sm);background:rgb(var(--white-rgb) / .72);border:1px solid rgb(var(--white-rgb) / .82);box-shadow:0 6px 18px rgb(var(--shadow-rgb) / .06);}
+.composer[hidden]{display:none;}
+.composer input{flex:1;min-width:0;height:44px;border-radius:14px;border:1px solid rgb(var(--ink-rgb) / .10);background:rgb(var(--white-rgb) / .82);padding:0 12px;font-family:inherit;font-size:15px;color:var(--fg);outline:none;}
+.composer input::placeholder{color:rgb(var(--ink-rgb) / .58);}
+.composer input:focus{border-color:rgb(var(--green-rgb) / .55);box-shadow:0 0 0 3px rgb(var(--green-rgb) / .10);}
+.composer .add{height:44px;padding:0 16px;flex:none;border-radius:14px;background:var(--accent);color:var(--white);font-size:14px;font-weight:600;}
+.composer .add:hover{background:var(--accent-deep);}
+
+/* ---------- tab bar ---------- */
+.tabbar{position:absolute;left:16px;right:16px;bottom:16px;height:64px;z-index:28;display:grid;grid-template-columns:repeat(3,1fr);border-radius:26px;background:linear-gradient(135deg, rgb(var(--white-rgb) / .72), rgb(var(--white-rgb) / .44));border:1px solid rgb(var(--white-rgb) / .72);box-shadow:0 18px 40px rgb(var(--shadow-rgb) / .18), inset 0 1px 0 rgb(var(--white-rgb) / .92);backdrop-filter:blur(28px) saturate(180%);-webkit-backdrop-filter:blur(28px) saturate(180%);transition:transform .24s ease,opacity .24s ease;}
+.tab{height:52px;align-self:center;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border-radius:20px;font-size:12px;line-height:1;font-weight:500;color:rgb(var(--ink-rgb) / .62);}
+.tab svg{width:22px;height:22px;}
+.tab.is-on{color:var(--fg);font-weight:600;}
+.tab.is-on svg{color:var(--accent);}
+.tab:hover{color:var(--fg);}
+.screen.chat-mode .tabbar{opacity:0;transform:translateY(120%);pointer-events:none;}
+.home-indicator{position:absolute;left:50%;bottom:8px;transform:translateX(-50%);width:134px;height:5px;border-radius:3px;background:rgb(var(--ink-rgb) / .26);z-index:65;pointer-events:none;}
+
+/* ---------- lists / me ---------- */
+.member-card{background:rgb(var(--white-rgb) / .84);border:1px solid rgb(var(--white-rgb) / .82);border-radius:var(--r-card);overflow:hidden;box-shadow:0 8px 24px rgb(var(--shadow-rgb) / .06);}
+.member-row{display:flex;align-items:center;gap:12px;min-height:64px;padding:0 16px;border-top:1px solid rgb(var(--ink-rgb) / .055);}
+.member-row:first-child{border-top:0;}
+.member-row .avatar{width:32px;height:32px;font-size:11px;}
+.member-copy{flex:1;min-width:0;}
+.member-name{font-size:15px;line-height:1.3;font-weight:500;}
+.member-role{font-size:12px;line-height:1.4;color:var(--muted);margin-top:1px;}
+.member-count{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap;}
+.profile{display:flex;align-items:center;gap:12px;padding:16px;border-radius:var(--r-card);}
+.profile .avatar{width:56px;height:56px;font-size:17px;border-width:2px;}
+.profile-copy h2{font-size:20px;line-height:1.25;font-weight:600;letter-spacing:-.015em;}
+.profile-copy p{font-size:12.5px;line-height:1.5;color:var(--muted);margin-top:2px;}
+.focus-card{margin-top:16px;padding:16px;border-radius:var(--r-card);background:rgb(var(--white-rgb) / .84);border:1px solid rgb(var(--white-rgb) / .82);box-shadow:0 8px 24px rgb(var(--shadow-rgb) / .06);}
+.focus-top{display:flex;align-items:center;justify-content:space-between;gap:12px;}
+.focus-top .eyebrow{font-size:12px;}
+.focus-num{font-size:12px;line-height:1.4;color:var(--muted);font-variant-numeric:tabular-nums;}
+.focus-card h3{font-size:17px;line-height:1.3;font-weight:600;letter-spacing:-.01em;margin-top:8px;}
+.progress-track{height:6px;border-radius:999px;background:rgb(var(--ink-rgb) / .08);overflow:hidden;margin-top:12px;}
+.progress-track span{display:block;height:100%;border-radius:inherit;background:var(--accent);transition:width .55s cubic-bezier(.22,.8,.24,1);}
+.focus-sub{font-size:12px;line-height:1.4;color:var(--muted);margin-top:8px;}
+.me-foot{margin-top:24px;text-align:center;font-size:12px;line-height:1.5;color:rgb(var(--ink-rgb) / .58);}
+
+/* ---------- chat ---------- */
+.chat-screen{position:absolute;inset:0;z-index:35;overflow:hidden;background:linear-gradient(165deg,var(--chat-1),var(--chat-2) 55%,var(--chat-3));transform:translateX(100%);visibility:hidden;transition:transform .28s cubic-bezier(.32,.8,.32,1),visibility 0s linear .28s;}
+.chat-screen.is-open{transform:none;visibility:visible;transition:transform .28s cubic-bezier(.32,.8,.32,1),visibility 0s;}
+.chat-bg{position:absolute;inset:0;pointer-events:none;background:
+  radial-gradient(45% 28% at 8% 12%, rgb(var(--green-rgb) / .07), transparent 70%),
+  radial-gradient(40% 26% at 96% 34%, rgb(var(--coral-rgb) / .06), transparent 70%),
+  radial-gradient(50% 30% at 24% 92%, rgb(var(--shadow-rgb) / .07), transparent 72%);}
+.chat-nav{position:absolute;top:54px;left:0;right:0;height:58px;z-index:20;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg, rgb(var(--white-rgb) / .62), rgb(var(--white-rgb) / .34));backdrop-filter:blur(26px) saturate(170%);-webkit-backdrop-filter:blur(26px) saturate(170%);border-bottom:1px solid rgb(var(--white-rgb) / .55);}
+.back-pill{position:absolute;left:14px;top:50%;transform:translateY(-50%);height:36px;padding:0 12px 0 8px;font-size:12.5px;color:rgb(var(--ink-rgb) / .82);}
+.back-pill .ic{width:15px;height:15px;color:rgb(var(--ink-rgb) / .62);}
+.back-pill:active{transform:translateY(-50%) scale(.97);}
+.chat-id{text-align:center;max-width:190px;}
+.chat-id h2{font-size:17px;line-height:1.2;font-weight:600;letter-spacing:-.01em;}
+.chat-id p{font-size:12px;line-height:1.3;color:var(--muted);margin-top:1px;white-space:nowrap;}
+.chat-scroll{position:absolute;top:112px;left:0;right:0;bottom:0;overflow-y:auto;overflow-x:hidden;padding:16px 16px 44px;scrollbar-width:none;}
+.chat-time{text-align:center;font-size:12px;line-height:1.4;color:rgb(var(--ink-rgb) / .58);margin:2px 0 14px;font-variant-numeric:tabular-nums;}
+.msg{display:flex;align-items:flex-start;gap:8px;margin-bottom:12px;}
+.msg.out{justify-content:flex-end;}
+.bubble{max-width:74%;padding:10px 12px;border-radius:18px;border-top-left-radius:6px;font-size:15px;line-height:1.5;letter-spacing:-.005em;color:var(--fg);background:linear-gradient(135deg, rgb(var(--white-rgb) / .76), rgb(var(--white-rgb) / .50));border:1px solid rgb(var(--white-rgb) / .82);box-shadow:0 6px 18px rgb(var(--shadow-rgb) / .08), inset 0 1px 0 rgb(var(--white-rgb) / .9);backdrop-filter:blur(18px) saturate(160%);-webkit-backdrop-filter:blur(18px) saturate(160%);}
+.bubble.out{background:var(--accent);color:var(--white);border-color:rgb(var(--green-rgb) / .48);border-top-left-radius:18px;border-bottom-right-radius:6px;box-shadow:0 8px 20px rgb(var(--green-rgb) / .18);}
+.chat-task{position:relative;margin:4px 0 16px;padding:16px;border-radius:var(--r-card);cursor:pointer;}
+.chat-task:hover{box-shadow:0 22px 52px rgb(var(--shadow-rgb) / .18), inset 0 1px 0 rgb(var(--white-rgb) / .92);}
+.ct-head{display:flex;align-items:center;gap:6px;font-size:12px;line-height:1.4;color:var(--muted);}
+.ct-mark{width:15px;height:15px;flex:none;color:var(--accent);}
+.ct-badge{margin-left:auto;padding:3px 8px;border-radius:var(--r-pill);background:rgb(var(--white-rgb) / .62);border:1px solid rgb(var(--ink-rgb) / .07);font-size:12px;line-height:1.3;letter-spacing:.01em;color:rgb(var(--ink-rgb) / .66);white-space:nowrap;}
+.chat-task h3{font-size:20px;line-height:1.25;font-weight:600;letter-spacing:-.015em;margin-top:8px;}
+.ct-progress{display:flex;align-items:center;gap:10px;margin-top:12px;}
+.ct-copy{flex:1;min-width:0;}
+.ct-strong{font-size:13px;line-height:1.4;font-weight:600;color:var(--fg);}
+.ct-muted{font-size:12px;line-height:1.4;color:var(--muted);margin-top:2px;}
+.chat-task .ct-btn{width:100%;min-height:44px;height:44px;margin-top:12px;border-radius:14px;font-size:15px;box-shadow:0 8px 18px rgb(var(--green-rgb) / .20);}
+.chat-task .ct-btn:disabled{box-shadow:none;}
+
+/* ---------- buttons ---------- */
+.btn-primary{display:flex;align-items:center;justify-content:center;gap:6px;min-height:52px;padding:0 18px;border:1px solid transparent;border-radius:16px;background:var(--accent);color:var(--white);font-size:16px;line-height:1;font-weight:600;letter-spacing:-.01em;box-shadow:0 10px 24px rgb(var(--green-rgb) / .20), inset 0 1px 0 rgb(var(--white-rgb) / .18);transition:background .18s ease,transform .15s ease,box-shadow .18s ease;}
+.btn-primary:hover{background:var(--accent-deep);}
+.btn-primary:disabled{background:rgb(var(--green-rgb) / .08);border-color:rgb(var(--green-rgb) / .16);color:var(--accent);box-shadow:none;}
+.btn-primary svg{width:16px;height:16px;flex:none;}
+.btn-secondary{display:flex;align-items:center;justify-content:center;gap:6px;min-height:52px;padding:0 18px;border:1px solid rgb(var(--ink-rgb) / .09);border-radius:16px;background:rgb(var(--white-rgb) / .58);color:var(--fg);font-size:16px;line-height:1;font-weight:600;letter-spacing:-.01em;box-shadow:inset 0 1px 0 rgb(var(--white-rgb) / .85);transition:background .18s ease,transform .15s ease,border-color .18s ease;}
+.btn-secondary:hover{background:rgb(var(--white-rgb) / .80);border-color:rgb(var(--ink-rgb) / .16);}
+.btn-primary:active,.btn-secondary:active,.glass-pill:not(.back-pill):active,.seg:active,.icon-btn:active,.friend-row:active,.tab:active,.composer .add:active{transform:scale(.97);}
+
+/* ---------- sheets ---------- */
+.scrim{position:absolute;inset:0;z-index:45;background:rgb(var(--ink-rgb) / .26);backdrop-filter:blur(6px) saturate(120%);-webkit-backdrop-filter:blur(6px) saturate(120%);opacity:0;pointer-events:none;transition:opacity .28s ease;}
+.scrim.show{opacity:1;pointer-events:auto;}
+.sub-scrim{z-index:55;background:rgb(var(--ink-rgb) / .20);}
+.sheet{position:absolute;left:0;right:0;bottom:0;z-index:50;padding:0 16px;border:1px solid rgb(var(--white-rgb) / .82);border-bottom:0;border-radius:var(--r-sheet) var(--r-sheet) 0 0;background:linear-gradient(160deg, rgb(var(--white-rgb) / .88), rgb(var(--white-rgb) / .70));backdrop-filter:blur(34px) saturate(180%);-webkit-backdrop-filter:blur(34px) saturate(180%);box-shadow:0 -18px 48px rgb(var(--shadow-rgb) / .16), inset 0 1px 0 rgb(var(--white-rgb) / .95);transform:translateY(102%);visibility:hidden;transition:transform .38s cubic-bezier(.22,.9,.24,1),visibility 0s linear .38s;will-change:transform;}
+.sheet.show{transform:translateY(0);visibility:visible;transition:transform .38s cubic-bezier(.22,.9,.24,1),visibility 0s;}
+.handle{width:36px;height:5px;flex:none;border-radius:999px;background:rgb(var(--ink-rgb) / .18);margin:8px auto 6px;}
+.sheet-head{display:flex;align-items:center;justify-content:space-between;padding:2px 4px 0;}
+.sheet-head h2{font-size:20px;line-height:1.3;font-weight:700;letter-spacing:-.015em;}
+.icon-btn{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;color:rgb(var(--ink-rgb) / .56);}
+.icon-btn:hover{background:rgb(var(--ink-rgb) / .05);color:var(--fg);}
+.icon-btn svg{width:17px;height:17px;}
+.sheet-sub{font-size:13px;line-height:1.5;color:var(--muted);margin:2px 4px 16px;}
+
+/* task detail */
+.detail-sheet{height:78%;display:flex;flex-direction:column;}
+.detail-head{flex:none;padding:2px 4px 12px;}
+.detail-eyebrow{font-size:12px;line-height:1.4;color:var(--muted);letter-spacing:.01em;}
+.detail-title{font-size:28px;line-height:1.2;font-weight:700;letter-spacing:-.022em;margin-top:4px;overflow-wrap:anywhere;}
+.chip-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;}
+.chip{display:inline-flex;align-items:center;gap:5px;height:29px;padding:0 10px;border-radius:var(--r-pill);background:rgb(var(--white-rgb) / .62);border:1px solid rgb(var(--white-rgb) / .82);box-shadow:0 2px 8px rgb(var(--shadow-rgb) / .06);font-size:12px;line-height:1;font-weight:500;color:rgb(var(--ink-rgb) / .74);white-space:nowrap;}
+.chip svg{width:13px;height:13px;color:rgb(var(--ink-rgb) / .52);flex:none;}
+.chip-done{background:rgb(var(--green-rgb) / .08);border-color:rgb(var(--green-rgb) / .16);color:var(--accent);font-weight:600;}
+.chip-done svg{color:var(--accent);}
+.detail-body{flex:1;min-height:0;overflow-y:auto;padding:0 2px 8px;scrollbar-width:none;}
+.info-card{background:rgb(var(--white-rgb) / .54);border:1px solid rgb(var(--white-rgb) / .82);border-radius:var(--r-card-sm);box-shadow:0 8px 24px rgb(var(--shadow-rgb) / .07), inset 0 1px 0 rgb(var(--white-rgb) / .9);backdrop-filter:blur(20px) saturate(160%);-webkit-backdrop-filter:blur(20px) saturate(160%);overflow:hidden;}
+.info-row{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:48px;padding:0 16px;border-top:1px solid rgb(var(--ink-rgb) / .06);font-size:12.5px;line-height:1.4;}
+.info-row:first-child{border-top:0;}
+.info-row .k{color:var(--muted);flex:none;}
+.info-row .v{display:flex;align-items:center;gap:6px;text-align:right;font-size:13px;font-weight:500;color:var(--fg);min-width:0;}
+.info-row .v .avatar.sm{flex:none;}
+.remind{font-weight:600;color:rgb(var(--ink-rgb) / .72);}
+.remind svg{width:14px;height:14px;color:rgb(var(--ink-rgb) / .52);flex:none;}
+.remind.on{color:var(--accent);}
+.remind.on svg{color:var(--accent);}
+.note-card{margin-top:12px;padding:16px;border-radius:var(--r-card-sm);background:rgb(var(--white-rgb) / .44);border:1px solid rgb(var(--white-rgb) / .78);}
+.note-label{font-size:12px;line-height:1.4;font-weight:600;letter-spacing:.03em;color:var(--muted);}
+.note-card p{margin-top:6px;font-size:15px;line-height:1.6;color:rgb(var(--ink-rgb) / .86);}
+.sub-hint{display:flex;align-items:center;gap:6px;margin:12px 4px 0;font-size:12px;line-height:1.5;font-weight:500;color:var(--accent);}
+.sub-hint svg{width:14px;height:14px;flex:none;}
+.detail-actions{flex:none;display:flex;gap:10px;padding:12px 2px 24px;}
+.detail-actions .btn-primary{flex:1.2;min-width:0;}
+.detail-actions .btn-secondary{flex:1;min-width:0;}
+
+/* share + subscribe */
+.share-sheet,.subscribe-sheet{padding-bottom:24px;}
+.subscribe-sheet{z-index:60;}
+.friend-row{display:flex;align-items:center;gap:12px;width:100%;min-height:64px;padding:10px 12px;border-radius:var(--r-card-sm);background:rgb(var(--white-rgb) / .56);border:1px solid rgb(var(--white-rgb) / .82);box-shadow:0 6px 18px rgb(var(--shadow-rgb) / .06);text-align:left;}
+.friend-row:hover{background:rgb(var(--white-rgb) / .74);}
+.friend-row .avatar{width:40px;height:40px;font-size:13px;}
+.friend-copy{flex:1;min-width:0;display:flex;flex-direction:column;}
+.friend-name{font-size:15px;line-height:1.3;font-weight:600;}
+.friend-sub{font-size:12px;line-height:1.4;color:var(--muted);margin-top:1px;}
+.friend-row > svg{width:16px;height:16px;color:rgb(var(--ink-rgb) / .50);flex:none;}
+.sub-req{display:flex;align-items:center;gap:10px;padding:12px;border-radius:18px;background:rgb(var(--white-rgb) / .52);border:1px solid rgb(var(--white-rgb) / .82);}
+.sub-req .brand-mark{width:34px;height:34px;border-radius:11px;}
+.sub-req .brand-mark svg{width:20px;height:20px;}
+.sub-req p{font-size:14px;line-height:1.4;font-weight:600;letter-spacing:-.005em;}
+.sub-note{display:flex;align-items:center;gap:6px;margin:10px 4px 0;font-size:12px;line-height:1.4;color:var(--muted);}
+.sub-note svg{width:14px;height:14px;flex:none;color:rgb(var(--ink-rgb) / .52);}
+.checkbox-row{display:flex;align-items:center;gap:10px;min-height:48px;margin:8px 0 4px;font-size:13.5px;line-height:1.4;color:rgb(var(--ink-rgb) / .82);cursor:pointer;position:relative;}
+.checkbox-row input{position:absolute;opacity:0;width:1px;height:1px;pointer-events:none;}
+.box{width:24px;height:24px;flex:none;border-radius:8px;border:1.5px solid rgb(var(--ink-rgb) / .20);background:rgb(var(--white-rgb) / .70);display:grid;place-items:center;transition:background .16s ease,border-color .16s ease;}
+.box svg{width:14px;height:14px;color:var(--white);opacity:0;transform:scale(.6);transition:opacity .16s ease,transform .16s ease;}
+.checkbox-row input:checked + .box{background:var(--accent);border-color:var(--accent);}
+.checkbox-row input:checked + .box svg{opacity:1;transform:none;}
+.checkbox-row input:focus-visible + .box{outline:2px solid var(--fg);outline-offset:2px;}
+.sub-actions{display:flex;gap:10px;margin-top:12px;}
+.sub-actions button{flex:1;min-height:50px;font-size:15px;}
+
+/* ---------- service notice ---------- */
+.notice{position:absolute;top:60px;left:12px;right:12px;z-index:70;display:flex;align-items:flex-start;gap:10px;padding:12px;border-radius:22px;background:linear-gradient(135deg, rgb(var(--white-rgb) / .88), rgb(var(--white-rgb) / .72));border:1px solid rgb(var(--white-rgb) / .86);box-shadow:0 18px 44px rgb(var(--shadow-rgb) / .22), inset 0 1px 0 rgb(var(--white-rgb) / .96);backdrop-filter:blur(32px) saturate(180%);-webkit-backdrop-filter:blur(32px) saturate(180%);text-align:left;opacity:0;transform:translateY(-140%);visibility:hidden;transition:transform .52s cubic-bezier(.2,1.25,.4,1),opacity .26s ease,visibility 0s linear .52s;}
+.notice.show{opacity:1;transform:none;visibility:visible;transition:transform .52s cubic-bezier(.2,1.25,.4,1),opacity .26s ease,visibility 0s;}
+.notice-icon{width:36px;height:36px;flex:none;border-radius:12px;background:rgb(var(--green-rgb) / .10);color:var(--accent);display:grid;place-items:center;}
+.notice-icon svg{width:18px;height:18px;}
+.notice-copy{min-width:0;flex:1;display:block;}
+.notice-title{display:block;font-size:12px;line-height:1.4;letter-spacing:.01em;color:var(--muted);}
+.notice-body{display:block;font-size:14px;line-height:1.45;font-weight:600;color:var(--fg);margin-top:2px;}
+
+@media (prefers-reduced-motion:reduce){
+  .view,.chat-screen,.sheet,.notice,.ring,.ring-fill,.progress-track span,.btn-primary,.btn-secondary,.glass-pill,.seg,.icon-btn,.friend-row,.tab,.composer .add{transition:none !important;animation:none !important;}
+}
+</style>
+</head>
+<body>
+<svg class="sprite" aria-hidden="true" width="0" height="0">
+  <defs>
+    <symbol id="i-mark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round">
+      <circle cx="9.2" cy="13.4" r="5.1"></circle>
+      <circle cx="14.8" cy="10.6" r="5.1"></circle>
+    </symbol>
+    <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M5 12.5 10 17.5 19 7.5"></path>
+    </symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round">
+      <path d="M12 5v14M5 12h14"></path>
+    </symbol>
+    <symbol id="i-bell" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M18 9a6 6 0 0 0-12 0c0 6-2.5 7-2.5 7h17S18 15 18 9Z"></path>
+      <path d="M10 20a2.2 2.2 0 0 0 4 0"></path>
+    </symbol>
+    <symbol id="i-bell-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M18 9a6 6 0 0 0-9.3-5.1M6 8.2C5.8 13.6 3.5 16 3.5 16h12"></path>
+      <path d="M10 20a2.2 2.2 0 0 0 4 0"></path>
+      <path d="m4 4 16 16"></path>
+    </symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="8.5"></circle>
+      <path d="M12 7.5V12l3 2"></path>
+    </symbol>
+    <symbol id="i-users" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M16 19v-1.5a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4V19"></path>
+      <circle cx="9" cy="7" r="3.2"></circle>
+      <path d="M17 11a3.2 3.2 0 0 0 0-6.2M22 19v-1.5a4 4 0 0 0-3-3.8"></path>
+    </symbol>
+    <symbol id="i-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="m14 6-6 6 6 6"></path>
+    </symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="m9 6 6 6-6 6"></path>
+    </symbol>
+    <symbol id="i-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round">
+      <path d="m6 6 12 12M18 6 6 18"></path>
+    </symbol>
+    <symbol id="i-more" viewBox="0 0 24 24" fill="currentColor">
+      <circle cx="6" cy="12" r="1.5"></circle>
+      <circle cx="12" cy="12" r="1.5"></circle>
+      <circle cx="18" cy="12" r="1.5"></circle>
+    </symbol>
+    <symbol id="i-target" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7">
+      <circle cx="12" cy="12" r="7"></circle>
+      <circle cx="12" cy="12" r="2.2" fill="currentColor" stroke="none"></circle>
+    </symbol>
+    <symbol id="i-list" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3.5" y="3.5" width="17" height="17" rx="5"></rect>
+      <path d="m8 11 1.5 1.5L12.5 9"></path>
+      <path d="M8 16h8"></path>
+    </symbol>
+    <symbol id="i-layers" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+      <rect x="3.5" y="4.5" width="17" height="6" rx="2.2"></rect>
+      <rect x="3.5" y="13.5" width="17" height="6" rx="2.2"></rect>
+    </symbol>
+    <symbol id="i-user" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round">
+      <circle cx="12" cy="8" r="3.5"></circle>
+      <path d="M5 20a7 7 0 0 1 14 0"></path>
+    </symbol>
+    <symbol id="i-info" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round">
+      <circle cx="12" cy="12" r="8.5"></circle>
+      <path d="M12 11v5M12 7.8v.2"></path>
+    </symbol>
+    <symbol id="i-signal" viewBox="0 0 20 12" fill="currentColor">
+      <rect x="1" y="8" width="3" height="4" rx="1"></rect>
+      <rect x="6" y="6" width="3" height="6" rx="1"></rect>
+      <rect x="11" y="3.5" width="3" height="8.5" rx="1"></rect>
+      <rect x="16" y="1" width="3" height="11" rx="1"></rect>
+    </symbol>
+    <symbol id="i-wifi" viewBox="0 0 20 14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round">
+      <path d="M2 5.2a12 12 0 0 1 16 0"></path>
+      <path d="M5 8.6a7.6 7.6 0 0 1 10 0"></path>
+      <path d="M8 12a3.2 3.2 0 0 1 4 0"></path>
+    </symbol>
+    <symbol id="i-battery" viewBox="0 0 26 12">
+      <rect x="1" y="1" width="21" height="10" rx="3" fill="none" stroke="currentColor" stroke-width="1.2" opacity=".42"></rect>
+      <rect x="3" y="3" width="17" height="6" rx="1.5" fill="currentColor"></rect>
+      <path d="M24 4.2v3.6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" opacity=".42"></path>
+    </symbol>
+  </defs>
+</svg>
+
+<div class="stage">
+  <div class="ambient" aria-hidden="true"><span></span><span></span><span></span></div>
+  <div class="device" id="device">
+    <span class="side-btn vol1" aria-hidden="true"></span>
+    <span class="side-btn vol2" aria-hidden="true"></span>
+    <span class="side-btn power" aria-hidden="true"></span>
+    <div class="phone">
+      <div class="screen" id="phone-screen" data-od-id="phone">
+
+        <div class="dynamic-island" aria-hidden="true"></div>
+        <div class="statusbar" aria-hidden="true">
+          <span class="status-time">9:41</span>
+          <span class="status-icons">
+            <svg class="ic" aria-hidden="true"><use href="#i-signal"></use></svg>
+            <svg class="ic" aria-hidden="true"><use href="#i-wifi"></use></svg>
+            <svg class="ic batt" aria-hidden="true"><use href="#i-battery"></use></svg>
+          </span>
+        </div>
+
+        <header class="mini-nav" data-od-id="mini-nav">
+          <div class="brand">
+            <span class="brand-mark" aria-hidden="true"><svg><use href="#i-mark"></use></svg></span>
+            <span class="brand-name">同办</span>
+          </div>
+          <div class="mp-capsule" aria-hidden="true">
+            <span class="mp-seg"><svg><use href="#i-more"></use></svg></span>
+            <span class="mp-seg"><svg><use href="#i-target"></use></svg></span>
+          </div>
+        </header>
+
+        <div class="views">
+
+          <section class="view is-active" id="view-home" data-od-id="home" aria-label="任务首页">
+            <div class="greeting" data-od-id="home-greeting">
+              <p class="date">10 月 24 日 · 星期五</p>
+              <h1>早上好</h1>
+              <p class="greet-sub">清单都在这儿，一件件来。</p>
+            </div>
+
+            <section class="summary glass" data-od-id="home-shared-list" aria-label="共享清单 周末露营准备">
+              <div class="summary-top">
+                <div class="summary-lead">
+                  <p class="eyebrow"><svg class="ic" aria-hidden="true"><use href="#i-users"></use></svg>共享清单 · 2 人协作</p>
+                  <h2 class="summary-title">周末露营准备</h2>
+                </div>
+                <div class="ring" data-ring aria-label="进度 1 / 4">
+                  <svg viewBox="0 0 64 64" aria-hidden="true">
+                    <circle class="ring-track" cx="32" cy="32" r="27"></circle>
+                    <circle class="ring-fill" cx="32" cy="32" r="27" pathLength="100"></circle>
+                  </svg>
+                  <span class="ring-label" data-ring-label>1/4</span>
+                </div>
+              </div>
+              <div class="summary-bottom">
+                <div class="summary-people">
+                  <div class="avatar-stack" aria-hidden="true">
+                    <span class="avatar">我</span>
+                    <span class="avatar coral">林</span>
+                  </div>
+                  <p class="remaining" data-remaining>还差 3 项</p>
+                </div>
+                <button class="glass-pill" type="button" id="invite-friend" data-od-id="invite-friend">
+                  <svg class="ic" aria-hidden="true"><use href="#i-plus"></use></svg>邀请好友
+                </button>
+              </div>
+            </section>
+
+            <div class="segments" role="tablist" aria-label="筛选任务" data-od-id="home-filter">
+              <button class="seg" type="button" role="tab" aria-selected="false" data-filter="today">今天</button>
+              <button class="seg is-on" type="button" role="tab" aria-selected="true" data-filter="all">全部</button>
+              <button class="seg" type="button" role="tab" aria-selected="false" data-filter="done">已完成</button>
+            </div>
+
+            <div class="section-head">
+              <h2>任务</h2>
+              <button class="glass-pill small" type="button" id="new-task-btn" data-od-id="new-task">
+                <svg class="ic" aria-hidden="true"><use href="#i-plus"></use></svg>新建
+              </button>
+            </div>
+
+            <form class="composer" id="composer" hidden>
+              <input id="new-task-input" type="text" maxlength="24" placeholder="写下一件要做的事" autocomplete="off" aria-label="新任务名称" />
+              <button class="add" type="submit">添加</button>
+            </form>
+
+            <div class="task-list" id="task-list" role="list" data-od-id="home-task-list"></div>
+          </section>
+
+          <section class="view" id="view-lists" data-od-id="lists" aria-label="共享清单">
+            <div class="page-head">
+              <h1>共享清单</h1>
+              <p>2 人协作 · 1 个进行中</p>
+            </div>
+
+            <section class="summary glass" data-od-id="lists-shared-list" aria-label="共享清单 周末露营准备">
+              <div class="summary-top">
+                <div class="summary-lead">
+                  <p class="eyebrow"><svg class="ic" aria-hidden="true"><use href="#i-users"></use></svg>共享清单 · 2 人协作</p>
+                  <h2 class="summary-title">周末露营准备</h2>
+                </div>
+                <div class="ring" data-ring aria-label="进度 1 / 4">
+                  <svg viewBox="0 0 64 64" aria-hidden="true">
+                    <circle class="ring-track" cx="32" cy="32" r="27"></circle>
+                    <circle class="ring-fill" cx="32" cy="32" r="27" pathLength="100"></circle>
+                  </svg>
+                  <span class="ring-label" data-ring-label>1/4</span>
+                </div>
+              </div>
+              <div class="summary-bottom">
+                <div class="summary-people">
+                  <div class="avatar-stack" aria-hidden="true">
+                    <span class="avatar">我</span>
+                    <span class="avatar coral">林</span>
+                  </div>
+                  <p class="remaining" data-remaining>还差 3 项</p>
+                </div>
+                <span class="summary-note">2 人协作</span>
+              </div>
+            </section>
+
+            <div class="section-head">
+              <h2>协作成员</h2>
+            </div>
+            <div class="member-card" data-od-id="lists-members">
+              <div class="member-row">
+                <span class="avatar" aria-hidden="true">我</span>
+                <div class="member-copy"><p class="member-name">我</p><p class="member-role">清单拥有者</p></div>
+                <span class="member-count" data-owner-count="我">3 项</span>
+              </div>
+              <div class="member-row">
+                <span class="avatar coral" aria-hidden="true">林</span>
+                <div class="member-copy"><p class="member-name">林晓</p><p class="member-role">好友任务</p></div>
+                <span class="member-count" data-owner-count="林晓">1 项</span>
+              </div>
+            </div>
+          </section>
+
+          <section class="view" id="view-me" data-od-id="me" aria-label="我">
+            <div class="page-head">
+              <h1>我</h1>
+              <p>把待办放进聊天，和朋友一起完成。</p>
+            </div>
+
+            <section class="profile glass" data-od-id="me-profile">
+              <span class="avatar" aria-hidden="true">我</span>
+              <div class="profile-copy">
+                <h2>我</h2>
+                <p>1 个共享清单 · 与林晓协作</p>
+              </div>
+            </section>
+
+            <section class="focus-card" data-od-id="me-current-list">
+              <div class="focus-top">
+                <span class="eyebrow">正在进行</span>
+                <span class="focus-num" data-me-count>1/4</span>
+              </div>
+              <h3>周末露营准备</h3>
+              <div class="progress-track" aria-hidden="true"><span data-me-bar style="width:25%"></span></div>
+              <p class="focus-sub"><span data-remaining>还差 3 项</span> · 和林晓一起</p>
+            </section>
+
+            <p class="me-foot">同办 · 把待办放进微信聊天里</p>
+          </section>
+
+        </div>
+
+        <section class="chat-screen" id="view-chat" data-od-id="chat" aria-label="微信聊天" aria-hidden="true">
+          <div class="chat-bg" aria-hidden="true"></div>
+          <header class="chat-nav">
+            <button class="glass-pill back-pill" type="button" id="back-home" data-od-id="chat-back">
+              <svg class="ic" aria-hidden="true"><use href="#i-chevron"></use></svg>返回同办
+            </button>
+            <div class="chat-id">
+              <h2>张鸿韦</h2>
+              <p>单聊 · 同办任务卡</p>
+            </div>
+          </header>
+          <div class="chat-scroll" id="chat-scroll">
+            <p class="chat-time">今天 09:36</p>
+            <div class="msg in">
+              <span class="avatar xs coral" aria-hidden="true">张</span>
+              <div class="bubble">露营清单我放在同办里了，缺什么直接勾。</div>
+            </div>
+            <div class="msg out">
+              <div class="bubble out">收到，我带露营灯，18:00 前到。</div>
+              <span class="avatar xs" aria-hidden="true">我</span>
+            </div>
+            <article class="chat-task glass" data-open-task="lamp" data-od-id="chat-task-card" aria-label="周末露营准备任务卡">
+              <div class="ct-head">
+                <svg class="ct-mark" aria-hidden="true"><use href="#i-mark"></use></svg>
+                <span>同办 · 小程序</span>
+                <span class="ct-badge">聊天工具模式</span>
+              </div>
+              <h3>周末露营准备</h3>
+              <div class="ct-progress">
+                <div class="ring sm" data-ring aria-label="进度 1 / 4">
+                  <svg viewBox="0 0 64 64" aria-hidden="true">
+                    <circle class="ring-track" cx="32" cy="32" r="27"></circle>
+                    <circle class="ring-fill" cx="32" cy="32" r="27" pathLength="100"></circle>
+                  </svg>
+                  <span class="ring-label" data-ring-label>1/4</span>
+                </div>
+                <div class="ct-copy">
+                  <p class="ct-strong" data-remaining>还差 3 项</p>
+                  <p class="ct-muted">负责人 林晓</p>
+                </div>
+                <span class="avatar coral" aria-hidden="true">林</span>
+              </div>
+              <button class="btn-primary ct-btn" type="button" data-open-task="lamp">去完成</button>
+            </article>
+            <p class="chat-time">09:37</p>
+            <div class="msg in">
+              <span class="avatar xs coral" aria-hidden="true">张</span>
+              <div class="bubble">记得订阅提醒，到点微信会弹你。</div>
+            </div>
+          </div>
+        </section>
+
+        <nav class="tabbar" aria-label="主导航" role="tablist" data-od-id="tabbar">
+          <button class="tab is-on" type="button" role="tab" aria-selected="true" data-tab="home">
+            <svg aria-hidden="true"><use href="#i-list"></use></svg><span>任务</span>
+          </button>
+          <button class="tab" type="button" role="tab" aria-selected="false" data-tab="lists">
+            <svg aria-hidden="true"><use href="#i-layers"></use></svg><span>清单</span>
+          </button>
+          <button class="tab" type="button" role="tab" aria-selected="false" data-tab="me">
+            <svg aria-hidden="true"><use href="#i-user"></use></svg><span>我</span>
+          </button>
+        </nav>
+
+        <div class="home-indicator" aria-hidden="true"></div>
+        <div class="scrim" id="scrim" aria-hidden="true"></div>
+        <div class="scrim sub-scrim" id="sub-scrim" aria-hidden="true"></div>
+
+        <section class="sheet detail-sheet" id="detail-sheet" role="dialog" aria-modal="true" aria-labelledby="detail-title" aria-hidden="true" inert data-od-id="task-detail">
+          <div class="handle" aria-hidden="true"></div>
+          <div class="detail-head">
+            <p class="detail-eyebrow" id="detail-eyebrow">任务详情 · 周末露营准备</p>
+            <h2 class="detail-title" id="detail-title">带露营灯</h2>
+            <div class="chip-row" id="detail-chips"></div>
+          </div>
+          <div class="detail-body" id="detail-body"></div>
+          <div class="detail-actions" id="detail-actions"></div>
+        </section>
+
+        <section class="sheet share-sheet" id="share-sheet" role="dialog" aria-modal="true" aria-labelledby="share-title" aria-hidden="true" inert data-od-id="share-sheet">
+          <div class="handle" aria-hidden="true"></div>
+          <div class="sheet-head">
+            <h2 id="share-title">发送清单</h2>
+            <button class="icon-btn" type="button" id="share-close" aria-label="关闭"><svg aria-hidden="true"><use href="#i-close"></use></svg></button>
+          </div>
+          <p class="sheet-sub">把「周末露营准备」发给好友，一起勾选。</p>
+          <button class="friend-row" type="button" id="send-linxiao" data-od-id="share-linxiao">
+            <span class="avatar coral" aria-hidden="true">林</span>
+            <span class="friend-copy"><span class="friend-name">林晓</span><span class="friend-sub">微信好友 · 单聊</span></span>
+            <svg aria-hidden="true"><use href="#i-arrow"></use></svg>
+          </button>
+        </section>
+
+        <section class="sheet subscribe-sheet" id="subscribe-sheet" role="dialog" aria-modal="true" aria-labelledby="subscribe-title" aria-hidden="true" inert data-od-id="subscribe-sheet">
+          <div class="handle" aria-hidden="true"></div>
+          <div class="sheet-head">
+            <h2 id="subscribe-title">订阅消息</h2>
+            <button class="icon-btn" type="button" id="sub-close" aria-label="关闭"><svg aria-hidden="true"><use href="#i-close"></use></svg></button>
+          </div>
+          <div class="sub-req">
+            <span class="brand-mark" aria-hidden="true"><svg><use href="#i-mark"></use></svg></span>
+            <p>同办 请求订阅：任务到期提醒</p>
+          </div>
+          <p class="sub-note"><svg aria-hidden="true"><use href="#i-info"></use></svg>每次订阅仅可发送 1 条提醒</p>
+          <label class="checkbox-row">
+            <input type="checkbox" id="always-sub" />
+            <span class="box" aria-hidden="true"><svg><use href="#i-check"></use></svg></span>
+            <span>总是保持以上选择，不再询问</span>
+          </label>
+          <div class="sub-actions">
+            <button class="btn-secondary" type="button" id="sub-cancel">取消</button>
+            <button class="btn-primary" type="button" id="sub-allow">允许</button>
+          </div>
+        </section>
+
+        <button class="notice" id="service-notice" type="button" aria-hidden="true" aria-live="polite" tabindex="-1" data-od-id="service-notice">
+          <span class="notice-icon" aria-hidden="true"><svg><use href="#i-bell"></use></svg></span>
+          <span class="notice-copy">
+            <span class="notice-title">服务通知 · 同办</span>
+            <span class="notice-body" id="notice-body">任务到期提醒：带露营灯 · 今天 18:00</span>
+          </span>
+        </button>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const $ = (selector, root = document) => root.querySelector(selector);
+  const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
+  const ESC = { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' };
+  const esc = (value) => String(value).replace(/[&<>"']/g, (ch) => ESC[ch]);
+  const icon = (name, cls = '') => `<svg class="${cls}" aria-hidden="true"><use href="#i-${name}"></use></svg>`;
+
+  const tasks = [
+    { id:'camp', title:'订营地', owner:'我', time:'09:20', day:'today', due:'今天 09:20', done:true, friend:false, note:'' },
+    { id:'coffee', title:'买咖啡豆', owner:'我', time:'15:00', day:'today', due:'今天 15:00', done:false, friend:false, note:'' },
+    { id:'lamp', title:'带露营灯', owner:'林晓', time:'18:00', day:'today', due:'今天 18:00', done:false, friend:true, note:'营地灯在玄关柜第二层，记得带备用电池' },
+    { id:'route', title:'打印路线图', owner:'我', time:'明天', day:'tomorrow', due:'明天', done:false, friend:false, note:'' }
+  ];
+
+  const state = {
+    filter:'all',
+    activeId:null,
+    subscribed:new Set(),
+    subscribeFor:null,
+    currentView:'home',
+    chatOpen:false,
+    allowToken:0,
+    closeTimer:null,
+    noticeTimer:null,
+    noticeHideTimer:null
+  };
+
+  const screen = $('#phone-screen');
+  const chatScreen = $('#view-chat');
+  const chatScroll = $('#chat-scroll');
+  const taskList = $('#task-list');
+  const detailSheet = $('#detail-sheet');
+  const shareSheet = $('#share-sheet');
+  const subscribeSheet = $('#subscribe-sheet');
+  const scrim = $('#scrim');
+  const subScrim = $('#sub-scrim');
+  const notice = $('#service-notice');
+  const composer = $('#composer');
+  const newTaskBtn = $('#new-task-btn');
+  const newTaskInput = $('#new-task-input');
+
+  const getTask = (id) => tasks.find((task) => task.id === id);
+  const doneCount = () => tasks.filter((task) => task.done).length;
+
+  function metaFor(task){
+    const status = task.done ? '已完成' : state.subscribed.has(task.id) ? '提醒已订阅' : task.friend ? '等好友订阅' : '待完成';
+    return `${task.owner} · ${status}`;
+  }
+
+  function renderRings(){
+    const done = doneCount();
+    const total = tasks.length;
+    const offset = 100 - (done / total) * 100;
+    $$('.ring-fill').forEach((circle) => { circle.style.strokeDashoffset = String(offset); });
+    $$('[data-ring-label]').forEach((label) => { label.textContent = `${done}/${total}`; });
+    $$('[data-ring]').forEach((ring) => { ring.setAttribute('aria-label', `进度 ${done} / ${total}`); });
+    $$('[data-remaining]').forEach((el) => { el.textContent = total - done === 0 ? '全部完成' : `还差 ${total - done} 项`; });
+    $$('[data-me-count]').forEach((el) => { el.textContent = `${done}/${total}`; });
+    $$('[data-me-bar]').forEach((el) => { el.style.width = `${(done / total) * 100}%`; });
+  }
+
+  function pulseRings(){
+    $$('.ring').forEach((ring) => {
+      ring.classList.remove('pop');
+      void ring.offsetWidth;
+      ring.classList.add('pop');
+    });
+  }
+
+  function taskRow(task){
+    const title = esc(task.title);
+    const dot = task.friend ? `<i class="dot ${state.subscribed.has(task.id) ? 'green' : 'coral'}"></i>` : '';
+    return `<div class="task-row ${task.done ? 'is-done' : ''} ${task.friend ? 'is-friend' : ''}" role="listitem" data-od-id="task-${task.id}">
+      <button class="check" type="button" data-check="${task.id}" aria-pressed="${task.done}" aria-label="${task.done ? '标记未完成' : '标记完成'}：${title}">
+        <span class="check-circle">${task.done ? icon('check') : ''}</span>
+      </button>
+      <button class="task-main" type="button" data-open-task="${task.id}" aria-label="查看${title}详情">
+        <span class="task-text"><span class="task-title">${title}</span><span class="task-meta">${dot}${esc(metaFor(task))}</span></span>
+        <span class="task-time">${task.time}</span>
+      </button>
+    </div>`;
+  }
+
+  function visibleTasks(){
+    if(state.filter === 'today') return tasks.filter((task) => task.day === 'today');
+    if(state.filter === 'done') return tasks.filter((task) => task.done);
+    return tasks.slice();
+  }
+
+  function renderList(){
+    const list = visibleTasks();
+    taskList.innerHTML = list.length
+      ? list.map(taskRow).join('')
+      : `<div class="empty">${icon('check')}<p>${state.filter === 'done' ? '还没有完成的任务' : '暂时没有任务'}</p></div>`;
+  }
+
+  function updateMemberCounts(){
+    $$('[data-owner-count]').forEach((el) => {
+      const owner = el.getAttribute('data-owner-count');
+      el.textContent = `${tasks.filter((task) => task.owner === owner).length} 项`;
+    });
+  }
+
+  function renderChatCard(){
+    const task = getTask('lamp');
+    const button = $('.ct-btn');
+    if(!task || !button) return;
+    button.disabled = task.done;
+    button.innerHTML = task.done ? icon('check') + '已完成' : '去完成';
+  }
+
+  function renderDetail(){
+    const task = getTask(state.activeId);
+    if(!task) return;
+    const sub = state.subscribed.has(task.id);
+    $('#detail-eyebrow').textContent = '任务详情 · 周末露营准备';
+    $('#detail-title').textContent = task.title;
+    $('#detail-chips').innerHTML = `
+      <span class="chip ${task.done ? 'chip-done' : ''}">${task.done ? icon('check') : ''}${task.done ? '已完成' : '待完成'}</span>
+      <span class="chip">${icon('clock')}${task.due}</span>`;
+    $('#detail-body').innerHTML = `
+      <div class="info-card">
+        <div class="info-row"><span class="k">所属清单</span><span class="v">周末露营准备</span></div>
+        <div class="info-row"><span class="k">负责人</span><span class="v"><span class="avatar sm ${task.owner === '林晓' ? 'coral' : ''}" aria-hidden="true">${task.owner === '林晓' ? '林' : '我'}</span>${task.owner}</span></div>
+        <div class="info-row"><span class="k">截止时间</span><span class="v">${task.due}</span></div>
+        <div class="info-row"><span class="k">提醒状态</span><span class="v remind ${sub ? 'on' : ''}">${icon(sub ? 'bell' : 'bell-off')}${sub ? '已订阅 1 次' : '未订阅'}</span></div>
+      </div>
+      ${task.note ? `<div class="note-card"><div class="note-label">说明</div><p>${esc(task.note)}</p></div>` : ''}
+      ${task.done ? `<p class="sub-hint">${icon('check')}已完成，进度已同步到共享清单</p>` : sub ? `<p class="sub-hint">${icon('bell')}到期会进入微信服务通知</p>` : ''}`;
+
+    let actions = '';
+    if(task.done){
+      actions = `<button class="btn-primary" type="button" disabled>${icon('check')}已完成</button><button class="btn-secondary" type="button" data-close-detail>关闭</button>`;
+    } else if(sub){
+      actions = `<button class="btn-primary" type="button" disabled>${icon('check')}已订阅 1 次</button><button class="btn-secondary" type="button" data-complete>标记完成</button>`;
+    } else {
+      actions = `<button class="btn-primary" type="button" data-subscribe>${icon('bell')}订阅提醒</button><button class="btn-secondary" type="button" data-complete>标记完成</button>`;
+    }
+    $('#detail-actions').innerHTML = actions;
+  }
+
+  function renderAll(){
+    renderRings();
+    renderList();
+    renderChatCard();
+    updateMemberCounts();
+    if(state.activeId) renderDetail();
+  }
+
+  function openSheet(sheet, backdrop){
+    sheet.inert = false;
+    sheet.setAttribute('aria-hidden', 'false');
+    backdrop.classList.add('show');
+    backdrop.setAttribute('aria-hidden', 'false');
+    requestAnimationFrame(() => { sheet.classList.add('show'); });
+  }
+
+  function closeSheet(sheet, backdrop){
+    sheet.classList.remove('show');
+    sheet.setAttribute('aria-hidden', 'true');
+    sheet.inert = true;
+    backdrop.classList.remove('show');
+    backdrop.setAttribute('aria-hidden', 'true');
+  }
+
+  function openDetail(id){
+    const task = getTask(id);
+    if(!task) return;
+    hideNotice();
+    state.activeId = id;
+    renderDetail();
+    openSheet(detailSheet, scrim);
+  }
+
+  function closeDetail(){
+    if(!detailSheet.classList.contains('show')) return;
+    closeSheet(detailSheet, scrim);
+    state.activeId = null;
+  }
+
+  function openSubscribe(id){
+    state.subscribeFor = id;
+    openSheet(subscribeSheet, subScrim);
+  }
+
+  function closeSubscribe(){
+    closeSheet(subscribeSheet, subScrim);
+    state.subscribeFor = null;
+  }
+
+  function allowSubscribe(){
+    const id = state.subscribeFor;
+    const task = getTask(id);
+    if(!task) return;
+    state.subscribed.add(id);
+    state.allowToken += 1;
+    const token = state.allowToken;
+    closeSubscribe();
+    renderAll();
+    clearTimeout(state.closeTimer);
+    clearTimeout(state.noticeTimer);
+    state.closeTimer = setTimeout(() => {
+      if(token !== state.allowToken) return;
+      if(state.activeId === id) closeDetail();
+    }, 950);
+    state.noticeTimer = setTimeout(() => {
+      if(token !== state.allowToken) return;
+      if(state.subscribed.has(id) && !task.done) showNotice(task);
+    }, 1250);
+  }
+
+  function showNotice(task){
+    $('#notice-body').textContent = `任务到期提醒：${task.title} · ${task.due}`;
+    notice.dataset.task = task.id;
+    notice.classList.add('show');
+    notice.setAttribute('aria-hidden', 'false');
+    notice.tabIndex = 0;
+    clearTimeout(state.noticeHideTimer);
+    state.noticeHideTimer = setTimeout(hideNotice, 8000);
+  }
+
+  function hideNotice(){
+    notice.classList.remove('show');
+    notice.setAttribute('aria-hidden', 'true');
+    notice.tabIndex = -1;
+    clearTimeout(state.noticeHideTimer);
+  }
+
+  function openShare(){
+    openSheet(shareSheet, scrim);
+  }
+
+  function closeShare(){
+    closeSheet(shareSheet, scrim);
+  }
+
+  function openChat(){
+    closeAllSheets();
+    hideNotice();
+    chatScreen.classList.add('is-open');
+    chatScreen.setAttribute('aria-hidden', 'false');
+    screen.classList.add('chat-mode');
+    state.chatOpen = true;
+    chatScroll.scrollTop = 0;
+  }
+
+  function closeChat(){
+    chatScreen.classList.remove('is-open');
+    chatScreen.setAttribute('aria-hidden', 'true');
+    screen.classList.remove('chat-mode');
+    state.chatOpen = false;
+  }
+
+  function closeAllSheets(){
+    if(subscribeSheet.classList.contains('show')) closeSubscribe();
+    if(shareSheet.classList.contains('show')) closeShare();
+    if(detailSheet.classList.contains('show')) closeDetail();
+  }
+
+  function showView(name){
+    state.currentView = name;
+    if(state.chatOpen) closeChat();
+    hideNotice();
+    $$('.view').forEach((view) => { view.classList.toggle('is-active', view.id === 'view-' + name); });
+    $$('.tab').forEach((tab) => {
+      const on = tab.dataset.tab === name;
+      tab.classList.toggle('is-on', on);
+      tab.setAttribute('aria-selected', String(on));
+    });
+  }
+
+  function setFilter(next){
+    state.filter = next;
+    $$('.seg').forEach((seg) => {
+      const on = seg.dataset.filter === next;
+      seg.classList.toggle('is-on', on);
+      seg.setAttribute('aria-selected', String(on));
+    });
+    renderList();
+  }
+
+  function toggleTask(id){
+    const task = getTask(id);
+    if(!task) return;
+    task.done = !task.done;
+    renderAll();
+    pulseRings();
+  }
+
+  function completeTask(){
+    const task = getTask(state.activeId);
+    if(!task || task.done) return;
+    task.done = true;
+    renderAll();
+    pulseRings();
+    clearTimeout(state.closeTimer);
+    state.closeTimer = setTimeout(() => {
+      if(state.activeId === task.id) closeDetail();
+    }, 900);
+  }
+
+  function toggleComposer(){
+    if(composer.hasAttribute('hidden')){
+      composer.removeAttribute('hidden');
+      newTaskBtn.innerHTML = icon('close') + '取消';
+      newTaskInput.focus();
+    } else {
+      composer.setAttribute('hidden', '');
+      newTaskBtn.innerHTML = icon('plus') + '新建';
+    }
+  }
+
+  function addTask(event){
+    event.preventDefault();
+    const title = newTaskInput.value.trim();
+    if(!title){ newTaskInput.focus(); return; }
+    tasks.push({
+      id:`t${Date.now()}`,
+      title:title.slice(0,24),
+      owner:'我',
+      time:'今天',
+      day:'today',
+      due:'今天',
+      done:false,
+      friend:false,
+      note:''
+    });
+    newTaskInput.value = '';
+    composer.setAttribute('hidden', '');
+    newTaskBtn.innerHTML = icon('plus') + '新建';
+    setFilter('all');
+    renderAll();
+    pulseRings();
+    const homeView = $('#view-home');
+    homeView.scrollTo({ top:homeView.scrollHeight, behavior:'smooth' });
+  }
+
+  function fit(){
+    const device = $('#device');
+    const pad = window.innerWidth < 560 ? 16 : 28;
+    const scale = Math.min(1, (window.innerWidth - pad * 2) / 413, (window.innerHeight - pad * 2) / 872);
+    device.style.transform = `scale(${Math.max(scale, 0.2)})`;
+  }
+
+  $('#invite-friend').addEventListener('click', openShare);
+  $('#share-close').addEventListener('click', closeShare);
+  $('#send-linxiao').addEventListener('click', () => {
+    closeShare();
+    window.setTimeout(openChat, 300);
+  });
+
+  $('#sub-close').addEventListener('click', closeSubscribe);
+  $('#sub-cancel').addEventListener('click', closeSubscribe);
+  $('#sub-allow').addEventListener('click', allowSubscribe);
+  $('#back-home').addEventListener('click', () => showView('home'));
+  $('#new-task-btn').addEventListener('click', toggleComposer);
+  composer.addEventListener('submit', addTask);
+  subScrim.addEventListener('click', closeSubscribe);
+
+  $$('.seg').forEach((seg) => {
+    seg.addEventListener('click', () => setFilter(seg.dataset.filter));
+  });
+
+  $$('.tab').forEach((tab) => {
+    tab.addEventListener('click', () => showView(tab.dataset.tab));
+  });
+
+  taskList.addEventListener('click', (event) => {
+    const check = event.target.closest('[data-check]');
+    if(!check) return;
+    event.preventDefault();
+    toggleTask(check.dataset.check);
+  });
+
+  document.addEventListener('click', (event) => {
+    const opener = event.target.closest('[data-open-task]');
+    if(!opener) return;
+    event.preventDefault();
+    openDetail(opener.dataset.openTask);
+  });
+
+  detailSheet.addEventListener('click', (event) => {
+    if(event.target.closest('[data-subscribe]')) openSubscribe(state.activeId);
+    else if(event.target.closest('[data-complete]')) completeTask();
+    else if(event.target.closest('[data-close-detail]')) closeDetail();
+  });
+
+  scrim.addEventListener('click', () => {
+    if(shareSheet.classList.contains('show')) closeShare();
+    else if(detailSheet.classList.contains('show')) closeDetail();
+  });
+
+  notice.addEventListener('click', () => {
+    const id = notice.dataset.task;
+    hideNotice();
+    if(id) openDetail(id);
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if(event.key !== 'Escape') return;
+    if(subscribeSheet.classList.contains('show')) closeSubscribe();
+    else if(shareSheet.classList.contains('show')) closeShare();
+    else if(detailSheet.classList.contains('show')) closeDetail();
+    else if(notice.classList.contains('show')) hideNotice();
+  });
+
+  window.addEventListener('resize', fit);
+  if(window.visualViewport) window.visualViewport.addEventListener('resize', fit);
+
+  renderAll();
+  fit();
+})();
+</script>
+</body>
+</html>
